@@ -1,16 +1,15 @@
+const express = require('express')
 const graphqlHTTP = require('express-graphql')
-const schema = require('./graphql/schema/Schema')
+const app = express()
 
-const express = require('express');
-const app = express();
+const schema = require('./graphql/schema/Schema')
 
 app.use('/graphql', graphqlHTTP({
   schema,
   graphiql: true
 }))
 
-// app.get('/', (req, res) => {
-//   res.send('Welcome to UniNinja');
-// });
+app.get('/', (req, res) => res.send("Hello from UniNinja !"))
 
-app.listen(3000, () => console.log('Server running'));
+// run server on port 3000
+app.listen('3000', _ => console.log('Server is listening on port 3000...'))

@@ -1,19 +1,20 @@
 const graphql = require('graphql')
+const University = require('../../models/University')
 
-const Universities = require('../../models/Universities')
 const fakeDatabase = {};
-// fill the fakeDatabase with some todos
+
+// fill the fakeDatabase with some universities
 (function() {
-  const universities = ["Sussex", "Brighton"];
-  universities.map(universities => {
-    const newUniversities = new Universities(universities);
-    fakeDatabase[newUniversities.id] = newUniversities
+  const universities = ["Sussex", "Brighton", "Surrey"];
+  universities.map(university => {
+    const newUniversity = new University(university);
+    fakeDatabase[newUniversity.id] = newUniversity
   });
 })()
 
-// define the Universities type for graphql
-const UniversitiesType = new graphql.GraphQLObjectType({
-  name: 'universities',
+// define the University type for graphql
+const UniversityType = new graphql.GraphQLObjectType({
+  name: 'university',
   description: 'a university item',
   fields: {
     id: {type: graphql.GraphQLInt},
@@ -24,10 +25,10 @@ const UniversitiesType = new graphql.GraphQLObjectType({
 
 // define the queries of the graphql Schema
 const query = new graphql.GraphQLObjectType({
-  name: 'UniversitiesQuery',
+  name: 'UniversityQuery',
   fields: {
-    universities: {
-      type: new graphql.GraphQLList(UniversitiesType),
+    university: {
+      type: new graphql.GraphQLList(UniversityType),
       args: {
         id: {
           type: graphql.GraphQLInt
@@ -42,38 +43,37 @@ const query = new graphql.GraphQLObjectType({
   }
 })
 
-
 // define the mutations of the graphql Schema
 const mutation = new graphql.GraphQLObjectType({
-  name: 'UniversitiesMutation',
+  name: 'UniversityMutation',
   fields: {
-    createUniversities: {
-      type: new graphql.GraphQLList(UniversitiesType),
+    createUniversity: {
+      type: new graphql.GraphQLList(UniversityType),
       args: {
         name: {
           type: new graphql.GraphQLNonNull(graphql.GraphQLString)
         }
       },
       resolve: (_, {name}) => {
-        const newUniversities = new Universities(name);
-        fakeDatabase[newUniversities.id] = newUniversities;
+        const newUniversity = new University(name);
+        fakeDatabase[newUniversity.id] = newUniversity;
         return Object.values(fakeDatabase);
       }
     },
-    checkUniversities: {
-      type: new graphql.GraphQLList(UniversitiesType),
-      args: {
-        id: {
-          type: new graphql.GraphQLNonNull(graphql.GraphQLInt)
-        }
-      },
-      resolve: (_, {id}) => {
-        //fakeDatabase[id].done = true;
-        return Object.values(fakeDatabase);
-      }
-    },
-    deleteUniversities: {
-      type: new graphql.GraphQLList(UniversitiesType),
+    // checkUniversity: {
+    //   type: new graphql.GraphQLList(UniversityType),
+    //   args: {
+    //     id: {
+    //       type: new graphql.GraphQLNonNull(graphql.GraphQLInt)
+    //     }
+    //   },
+    //   resolve: (_, {id}) => {
+    //     //fakeDatabase[id].done = true;
+    //     return Object.values(fakeDatabase);
+    //   }
+    // },
+    deleteUniversity: {
+      type: new graphql.GraphQLList(UniversityType),
       args: {
         id: {
           type: new graphql.GraphQLNonNull(graphql.GraphQLInt)
