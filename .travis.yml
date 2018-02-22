@@ -16,6 +16,6 @@ after_success:
   - pip install --user awscli # install aws cli w/o sudo
   - export PATH=$PATH:$HOME/.local/bin # put aws in the path
   - eval $(aws ecr get-login --region us-west-2) #needs AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY envvars
-  - docker build -t my_example_app .
+  - docker build -t unininja-api .
   - docker tag unininja-api:latest 581440852996.dkr.ecr.eu-west-2.amazonaws.com/unininja-api:latest
   - docker push 581440852996.dkr.ecr.eu-west-2.amazonaws.com/unininja-api:latest
