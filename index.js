@@ -9,7 +9,7 @@ app.use('/graphql', graphqlHTTP({
   graphiql: true
 }))
 
-app.get('/', (req, res) => res.send("Hello from UniNinja !"))
+app.get('/', (req, res) => res.send("The UniNinja API is coming soon!");
 
 // run server on port 3000
 app.listen('3000', _ => console.log('Server is listening on port 3000...'))
