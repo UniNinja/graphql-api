@@ -5,7 +5,7 @@ var MongoClient = require('mongodb').MongoClient;
 var uri = "mongodb://kay:UniNinja@mycluster0-shard-00-00.mongodb.net:27017,mycluster0-shard-00-01.mongodb.net:27017,mycluster0-shard-00-02.mongodb.net:27017/admin?ssl=true&replicaSet=Mycluster0-shard-0&authSource=admin";
 MongoClient.connect(uri, function(err, db) {
   console.log('Connection to DB has been made!');
-  db.close(); // remove this and it works
+  //db.close(); // remove this and it works
 });
 
 
@@ -26,11 +26,12 @@ app.use('/graphql', graphqlHTTP({
 app.get('/', function (req, res) {
   if (req.query.username == "loic") {
     res.send('iOS > Android');
-  } else if (req.query.username == "loic") {
+  } else if (req.query.username == "dan") {
     res.send('Android > iOS');
   } else {
     res.send("The UniNinja API is coming soon!");
   }
+});
 
 // run server on port 3000
 app.listen('3000', _ => console.log('Server is listening on port 3000...'))
