@@ -26,12 +26,11 @@ app.use('/graphql', graphqlHTTP({
 app.get('/', function (req, res) {
   if (req.query.username == "loic") {
     res.send('iOS > Android');
-  } else if (req.query.username == "dan") {
+  } else if (req.query.username == "loic") {
     res.send('Android > iOS');
   } else {
     res.send("The UniNinja API is coming soon!");
   }
-})
 
 // run server on port 3000
 app.listen('3000', _ => console.log('Server is listening on port 3000...'))
