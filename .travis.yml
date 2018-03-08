@@ -1,0 +1,20 @@
+sudo: required
+language: node_js
+services:
+- docker
+install:
+- echo "install nothing!"
+script:
+- echo "no tests!"
+after_success:
+  - docker --version  # document the version travis is using
+  - pip install --user awscli # install aws cli w/o sudo
+  - export PATH=$PATH:$HOME/.local/bin # put aws in the path
+  - eval $(aws ecr get-login --region eu-west-2 --no-include-email) #needs AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY envvars
+  - docker build -t unininja-api .
+  - docker tag unininja-api:latest 581440852996.dkr.ecr.eu-west-2.amazonaws.com/unininja-api:latest
+  - docker push 581440852996.dkr.ecr.eu-west-2.amazonaws.com/unininja-api:latest
+env:
+  global:
+  - secure: kuF0NzU+GnciCvZvCiucWoeRF+/4az/Hd7UrngUZr7Ei9mfHslsJzgYWhBUPGC4lqeESghoUEy+94hUAP+iGt7YeKTqcHGqNEsXaAGGI3EegX+x1Z17CVpEV3Li5gxVpyG5FkPuvHr+BFVH8HSmCtj9Fd+n0yEaL2EMBp2gekClTR7lmcvl0snbb4oqhyQ6k7+kL9udQwy1LmW/dj+1jvhOhwU1zoR7j1o9GsvXRJp+Q5P4301+o2XiEBVkYce1x6zelStJjqkoUB1J6/l/Hurmm58ZfY4rKn9DNL5aheCtzXzKJHrvITqktLVzPR5Y/BlwpPeul9k0OsElYuv0w/wQxn93Vht+0FQJbbYPZs8nS7LagiYH1/QCrlWneySH0wjwssbaw6lRqi9VFSZ8bcZq0taA1Y/OFFTS0avkcTjGbIUwj9SN/Duf3bx0lhNALSiKMp08ECHxn4l5LXWFUESlsJb0HXw5El8Hn4eu2ShmlhVSGH/22lrjlOJwwd+BLOeK72tNr+KbNmBbSFNvAPYiaLXLa/PA8Bs9GfMJ5pGh7+5LltrBxrylcQj33mVpDMkfr1/yPT/E1dUdHt41wWEJW68jinuSwbcFU6yem+ktL52b6ZSiLskCILy98hRmNWHZN0NHeqheOcE1fhZt2Sv9zSXXHUqVKJ93xvESBmpY=
+  - secure: dej2mbRxZM12kqAgxDOxnK0Z+gWPRr2Ukv6XDlp40tCUUh7O2dYyQPJt5gED24u2+CzvQ7sdAStULUj+S0g5LL1lLtAZV4+kxDcm22xLauIWhN89I7dl7npchksQZiEKSqkvtgnnQktTnztK3+GEcL1+2o2uV3cOeJ8wnRu32Vx0b9B2YgvsAXMI+d39ODLx/jagJaSmeZshE54s50LTtqkFvbtFDAvM6YiuE8ue2ILLi2Y94RpsVhJIqTmfmpdZHGJzBEYoj76+B1q0ajGPGftdgXalEmDqUhvGoHXKU6AjELz4AJqMgb1Wxi9A7RQMmot+YkC0LavVutS1dhCqEfmNAPwU8ePg7KCjWU0C9lb7bS/06p3E1fxPdxvYofFZ86E8eBKffZ4KrX2ukoNfwVxTy8DZlUg2sd9SO0oJZ0LVcfSNy65KXvOwp3FKa4E1cG9B9UQ/YLkj05qaJhdTfwQ6MkPxveMJjNMSzkTc7M+Y6TbXnHxcppuU8TNMz5YBb+Mjin4vlwZIgsNqUs4Hl11mQzx56eQW+V2h2JQH48T9BoBcfVwUH/sQTwQTaA5xlNyjmKQ8O5BgBGSOaWmvVFvkVjyVdBspRFFiicniaL0vACfDZFu/rDdRqjTaXoKABDwJZRWHLSQEBIK7yHOpToX2s9MWb/p7e5jU+b7Oszw=
