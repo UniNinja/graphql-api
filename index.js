@@ -5,13 +5,13 @@ const util = require('util');
 
 
 // DATABASE SETUP
-var uri = "mongodb://ESRSAdmin:UniNinja@cluster0-shard-00-00-d1bwx.mongodb.net:27017,cluster0-shard-00-01-d1bwx.mongodb.net:27017,cluster0-shard-00-02-d1bwx.mongodb.net:27017/uni?ssl=true&replicaSet=Cluster0-shard-0&authSource=admin"
+var uri = process.env.MONGODB_URI;
 var database = null;
 var MongoClient = require('mongodb').MongoClient;
 
 MongoClient.connect(uri, function(err, connection) {
   if(connection) {
-    database = connection.db("UniNinjaDB");
+    database = connection.db(process.env.MONGODB_DATABASE);
    }
 });
 
