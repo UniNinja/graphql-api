@@ -7,14 +7,16 @@ install:
 script:
 - echo "no tests!"
 after_success:
-  - docker --version  # document the version travis is using
-  - pip install --user awscli # install aws cli w/o sudo
-  - export PATH=$PATH:$HOME/.local/bin # put aws in the path
-  - eval $(aws ecr get-login --region eu-west-2 --no-include-email) #needs AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY envvars
-  - docker build -t unininja-api .
-  - docker tag unininja-api:latest 581440852996.dkr.ecr.eu-west-2.amazonaws.com/unininja-api:latest
-  - docker push 581440852996.dkr.ecr.eu-west-2.amazonaws.com/unininja-api:latest
+- docker --version
+- pip install --user awscli
+- export PATH=$PATH:$HOME/.local/bin
+- eval $(aws ecr get-login --region eu-west-2 --no-include-email)
+- docker build -t unininja-api .
+- docker tag unininja-api:latest 581440852996.dkr.ecr.eu-west-2.amazonaws.com/unininja-api:latest
+- docker push 581440852996.dkr.ecr.eu-west-2.amazonaws.com/unininja-api:latest
 env:
   global:
   - secure: kuF0NzU+GnciCvZvCiucWoeRF+/4az/Hd7UrngUZr7Ei9mfHslsJzgYWhBUPGC4lqeESghoUEy+94hUAP+iGt7YeKTqcHGqNEsXaAGGI3EegX+x1Z17CVpEV3Li5gxVpyG5FkPuvHr+BFVH8HSmCtj9Fd+n0yEaL2EMBp2gekClTR7lmcvl0snbb4oqhyQ6k7+kL9udQwy1LmW/dj+1jvhOhwU1zoR7j1o9GsvXRJp+Q5P4301+o2XiEBVkYce1x6zelStJjqkoUB1J6/l/Hurmm58ZfY4rKn9DNL5aheCtzXzKJHrvITqktLVzPR5Y/BlwpPeul9k0OsElYuv0w/wQxn93Vht+0FQJbbYPZs8nS7LagiYH1/QCrlWneySH0wjwssbaw6lRqi9VFSZ8bcZq0taA1Y/OFFTS0avkcTjGbIUwj9SN/Duf3bx0lhNALSiKMp08ECHxn4l5LXWFUESlsJb0HXw5El8Hn4eu2ShmlhVSGH/22lrjlOJwwd+BLOeK72tNr+KbNmBbSFNvAPYiaLXLa/PA8Bs9GfMJ5pGh7+5LltrBxrylcQj33mVpDMkfr1/yPT/E1dUdHt41wWEJW68jinuSwbcFU6yem+ktL52b6ZSiLskCILy98hRmNWHZN0NHeqheOcE1fhZt2Sv9zSXXHUqVKJ93xvESBmpY=
   - secure: dej2mbRxZM12kqAgxDOxnK0Z+gWPRr2Ukv6XDlp40tCUUh7O2dYyQPJt5gED24u2+CzvQ7sdAStULUj+S0g5LL1lLtAZV4+kxDcm22xLauIWhN89I7dl7npchksQZiEKSqkvtgnnQktTnztK3+GEcL1+2o2uV3cOeJ8wnRu32Vx0b9B2YgvsAXMI+d39ODLx/jagJaSmeZshE54s50LTtqkFvbtFDAvM6YiuE8ue2ILLi2Y94RpsVhJIqTmfmpdZHGJzBEYoj76+B1q0ajGPGftdgXalEmDqUhvGoHXKU6AjELz4AJqMgb1Wxi9A7RQMmot+YkC0LavVutS1dhCqEfmNAPwU8ePg7KCjWU0C9lb7bS/06p3E1fxPdxvYofFZ86E8eBKffZ4KrX2ukoNfwVxTy8DZlUg2sd9SO0oJZ0LVcfSNy65KXvOwp3FKa4E1cG9B9UQ/YLkj05qaJhdTfwQ6MkPxveMJjNMSzkTc7M+Y6TbXnHxcppuU8TNMz5YBb+Mjin4vlwZIgsNqUs4Hl11mQzx56eQW+V2h2JQH48T9BoBcfVwUH/sQTwQTaA5xlNyjmKQ8O5BgBGSOaWmvVFvkVjyVdBspRFFiicniaL0vACfDZFu/rDdRqjTaXoKABDwJZRWHLSQEBIK7yHOpToX2s9MWb/p7e5jU+b7Oszw=
+  - secure: BPbDaQRoYm5M1yND2dh5KNUZJVIUPAmRMuILyzODHYEbVNEEaSmdZnBC7KpQi8D1TsgXQEOpcZR4DnPLpnSTNznLscSYuakxseFukXVM/ocWuMAwI6ptltzbBX0N432RmYQIjBj0C+LLvQanzdY56ecYqQ4tdakNDUxAawfLNEmhjJrof1+9G+Uw/jJ+0nwgdNPf7NI6vBEGkIqPcNhpwjzhLPpQhtNIbrK8Ov1wiRY7ZuR+U0FERjSTjCRJG53dUJiIsYNV65LUuxhyXF0DZ99Y245dJ6VK4hR1ZgKsYxflnOG0uReJ/XItSEQ+ra9oD0Ys5WRVDzeWrnzJ4zzfsfL2PRNtfK/qMjpDW5sltKDzowE8+DsiAgQULPSGRcSCiPKuYP0ZfvoCUBCKjeTvhUG8gRJ6LcQ5vkd3mMb+ILP84hKcnk1xnCXMoeqz65a4LXkB2DMYOjTnL8vD0G5LiSq2ZkJxnkHbyeFKzmnOoE+K+pmRaXWuetUicr3izKHXBXojMSvfB/qPvPHMYDzp2b6/sz9ZAxfPAV/bV0mIXysEgmFwjGd0Yg8nOuEGG6jD0Jen7GV9vAdM4dTUgOXrBE2XZ5WiFuJCQ0MxGCtGMoLyfJnz3kFpNEGcDP854LIVUAy2mBLSmFEKOPh+Qh6rGD1Uq0DY8wRzKy2E/J7XhjA=
+  - secure: vXVajEJIcEb0ZQ3vY169ztJzbwBPUhpkJxo7AAx+9HJ6R+KbLBA6u3l2azdn4qtrqIak5Xlpchm5Vg28xNMCu2oB+V3rnsZMMZJFICw5NpXehGNcneX6zunfMNoewGNtmt4t7HYArdBbZ2WjjY2psYIkcBC+ULw5/cHQEk0bfDhGZoz9sqruoj9fSidcciiVvRtIQxFhuwNTepyqzdS92Ll9iS2p7+mlTZZU9ra5QWcU3KZ0lmykLBjCXKrUYFRDmTcjgZV8kfSuWh5AhllxQVBDnnNrQCf5QX6aJl+UqfZX+ae9t46FCJpW4T6Vd8eq8b5wPELfpHfs2xBuSE/r0Q1sHMcMgPLm6ZJIrvK6rXLysqi8EeuXI2kFW+8t6jJ+3A9QmdcnXcFQQ02iSG4pmulF35wsxVr+WVJb06xRxH7d3Ga0hijdt1PMO1bXlFiJlxKkaq6lA5n2vRh/fS54DTDZvphHAz0WQy5bJhIsqy3/77jv6Vk2UXzS7gO5JoUMh3tYUblaW9W/ZCJs+Ewv/sfm1bdM2yaDcgTZDwWQkw9Kt8mPF0ZZEBkBUs7Jsqm/CfxW6PMXD+oh2XVHYfp69EMn41v06VBd9zTHImoLtPxvia9UB/wDAVj7QyB8sZNYEHxPLFAer9EJ8dY6N2rY7ZaHYrWZ19nAPR3xSgOG0ao=
