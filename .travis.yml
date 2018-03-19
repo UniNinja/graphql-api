@@ -11,9 +11,10 @@ after_success:
 - pip install --user awscli
 - export PATH=$PATH:$HOME/.local/bin
 - eval $(aws ecr get-login --region eu-west-2 --no-include-email)
-- docker build -t unininja-api .
+- docker build -t unininja-api --build-var MONGODB_URI=$MONGODB_URI --build-var MONGODB_DATABASE=$MONGODB_DATABASE .
 - docker tag unininja-api:latest 581440852996.dkr.ecr.eu-west-2.amazonaws.com/unininja-api:latest
 - docker push 581440852996.dkr.ecr.eu-west-2.amazonaws.com/unininja-api:latest
+- aws ecs update-service --cluster unininja-api-cluster --service unininja-api-service --force-new-deployment
 env:
   global:
   - secure: kuF0NzU+GnciCvZvCiucWoeRF+/4az/Hd7UrngUZr7Ei9mfHslsJzgYWhBUPGC4lqeESghoUEy+94hUAP+iGt7YeKTqcHGqNEsXaAGGI3EegX+x1Z17CVpEV3Li5gxVpyG5FkPuvHr+BFVH8HSmCtj9Fd+n0yEaL2EMBp2gekClTR7lmcvl0snbb4oqhyQ6k7+kL9udQwy1LmW/dj+1jvhOhwU1zoR7j1o9GsvXRJp+Q5P4301+o2XiEBVkYce1x6zelStJjqkoUB1J6/l/Hurmm58ZfY4rKn9DNL5aheCtzXzKJHrvITqktLVzPR5Y/BlwpPeul9k0OsElYuv0w/wQxn93Vht+0FQJbbYPZs8nS7LagiYH1/QCrlWneySH0wjwssbaw6lRqi9VFSZ8bcZq0taA1Y/OFFTS0avkcTjGbIUwj9SN/Duf3bx0lhNALSiKMp08ECHxn4l5LXWFUESlsJb0HXw5El8Hn4eu2ShmlhVSGH/22lrjlOJwwd+BLOeK72tNr+KbNmBbSFNvAPYiaLXLa/PA8Bs9GfMJ5pGh7+5LltrBxrylcQj33mVpDMkfr1/yPT/E1dUdHt41wWEJW68jinuSwbcFU6yem+ktL52b6ZSiLskCILy98hRmNWHZN0NHeqheOcE1fhZt2Sv9zSXXHUqVKJ93xvESBmpY=
