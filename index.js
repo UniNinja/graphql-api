@@ -7,12 +7,15 @@ const util = require('util');
 // DATABASE SETUP
 var uri = process.env.MONGODB_URI;
 var database = null;
+var databaseErr = null;
 var MongoClient = require('mongodb').MongoClient;
 
 MongoClient.connect(uri, function(err, connection) {
   if(connection) {
     database = connection.db(process.env.MONGODB_DATABASE);
-   }
+  } else {
+    databaseErr = err;
+  }
 });
 
 // GRAPHQL SETUP
@@ -48,7 +51,7 @@ app.get('/', function (req, res) {
 
     // ELSE ERROR CONNECTING
     } else {
-      res.send('Error connecting to database!');
+      res.send('Error connecting to database: '+databaseErr);
     }
   }
 });
