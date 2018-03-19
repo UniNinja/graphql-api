@@ -51,7 +51,7 @@ app.get('/', function (req, res) {
 
     // ELSE ERROR CONNECTING
     } else {
-      res.send('Error connecting to database: '+databaseErr);
+      res.send('<html><body><p>Env vars</p><p>MONGODB_DATABASE: '+process.env.MONGODB_DATABASE+'</p><p>MONGODB_URI: '+process.env.MONGODB_URI+'</p></body></html>');
     }
   }
 });
