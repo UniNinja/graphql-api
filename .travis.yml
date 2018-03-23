@@ -11,8 +11,8 @@ after_success:
 - pip install --user awscli
 - export PATH=$PATH:$HOME/.local/bin
 - eval $(aws ecr get-login --region eu-west-2 --no-include-email)
-- docker build -t unininja-api --build-arg MONGODB_URI=$MONGODB_URI --build-arg MONGODB_DATABASE=$MONGODB_DATABASE
-  .
+- docker build -t unininja-api --build-arg MONGODB_URI=$MONGODB_URI --build-arg MONGODB_DATABASE=$MONGODB_DATABASE .
+- echo $MONGODB_DATABASE && echo $MONGODB_URI
 - docker tag unininja-api:latest 581440852996.dkr.ecr.eu-west-2.amazonaws.com/unininja-api:latest
 - docker push 581440852996.dkr.ecr.eu-west-2.amazonaws.com/unininja-api:latest
 - aws ecs update-service --cluster unininja-cluster --service unininja-service --force-new-deployment
