@@ -1,14 +1,16 @@
-//import {schema} from './Schema'
-//import {resolver} from './resolvers'
-
-//http://LMNL0GP6R3WGTPC4BPNC:password@data.unistats.ac.uk/api/v4/KIS/Institution/10007806/Courses.json?pageSize=300
-
 require('dotenv').config();
 import fetch from 'node-fetch';
 const util = require('util');
 
 // DATABASE SETUP
-var uri = process.env.MONGODB_URI;
+var uri = "mongodb://"
+            + process.env.MONGODB_USERNAME + ":"
+            + process.env.MONGODB_PASSWORD
+            + "@unininja-cluster-shard-00-00-d1bwx.mongodb.net:27017,"
+            + "unininja-cluster-shard-00-01-d1bwx.mongodb.net:27017,"
+            + "unininja-cluster-shard-00-02-d1bwx.mongodb.net:27017"
+            + "/uni?ssl=true&replicaSet=unininja-cluster-shard-0&authSource=admin";
+
 var database = null;
 var databaseErr = null;
 var MongoClient = require('mongodb').MongoClient;
@@ -44,7 +46,6 @@ const schema = makeExecutableSchema({
 });
 
 function getCourses() {
-  //console.log("Hi Dan");
   const promise = fetch('http://unistats.ac.uk/api/v4/KIS/Institution/10007806/Courses.json', {
     headers: {
       'Authorization': 'Basic TE1OTDBHUDZSM1dHVFBDNEJQTkM6cGFzc3dvcmQK'
