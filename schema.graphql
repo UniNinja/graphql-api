@@ -1,0 +1,24 @@
+scalar LatLon
+
+type Query {
+  universities: [University]
+  courses: [Course]
+  university(pubukprn: String!): University
+}
+
+type University {
+  pubukprn: String
+  name: String
+  url: String
+  color: String
+  courses: [Course]
+  location: LatLon
+}
+
+type Course {
+  # id: Int!
+  # name: String!
+  #
+  # ucasCode: String!
+  Title: String
+}
