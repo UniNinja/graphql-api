@@ -11,9 +11,7 @@ after_success:
 - pip install --user awscli
 - export PATH=$PATH:$HOME/.local/bin
 - eval $(aws ecr get-login --region eu-west-2 --no-include-email)
-- docker build -t unininja-api --build-arg MONGODB_URI=$MONGODB_URI --build-arg MONGODB_DATABASE=$MONGODB_DATABASE
-  .
-- echo $MONGODB_DATABASE && echo $MONGODB_URI
+- docker build -t unininja-api --build-arg MONGODB_URI=$MONGODB_URI --build-arg MONGODB_DATABASE=$MONGODB_DATABASE .
 - docker tag unininja-api:latest 581440852996.dkr.ecr.eu-west-2.amazonaws.com/unininja-api:latest
 - docker push 581440852996.dkr.ecr.eu-west-2.amazonaws.com/unininja-api:latest
 - aws ecs update-service --cluster unininja-cluster --service unininja-service --force-new-deployment
@@ -25,4 +23,3 @@ env:
   - secure: eIe78ozufLdZA8sXeqoAsRBdJcCj+M/ZkGadXAemIlNIhZickUQyYZMl9JJjMaqmPw8JsGbQvLF8TqE52WK+nPtESdsnF9hi4uiKLSmHIt8HjUQv6u7T9Aajlo1JyqjQ6aRLKwciUj656Jhz02XWiYjp94AlCoBEgiBBRK/jub/MdQcxCsAzb2YeQ87nU+SxoJOmS+13eixAoqLr7aPSSMOuWd65B/uGL4JXbY+7MNCZCQOWfve+PL5N54b/zhlZGS2FJrHatk+chMW+eATgh56xBrwNpjkC9BXQaFQpXRNm0Vp0pi+jB1ubwnJRIw+aGO83UkdlB3Bs6vrxY5XCmrIDtAFn1Ul1ri8hixCjFavBYRgDCqyJWvTuXRVwygmaMxbA3E42LxZzEglwfkTsut3zFFTkZJBjSeDQgFkyVcyKeEZWeqJL+QwQfDGplR1rwZwk7aNWAVG6xr5QT4nDuyDJ5/E+ldULzLmC45HplimGcLWP1FsmNhZM3URorRXFNdzPbhHAheuUdbCu10TM0FnIpW+/gK/2lDjOONrx5vfzW/0vOAoCNi984tdYcs1jXEn5j/vzWCQ1QxGVb5jppOFltj+OXBfTo5TTR6M50Lz5PQZiw0AOnM/ujFAY/rcIZ3SyUWP9oJf5UoT8gaHcrQtAhGKSBxcDkOceU0XAjdg=
   - secure: waoaa0UAf6Ti0PiXzkIzc7N6W896V5An64kGPtwZb0Q7+fmqgKneTMvyXo8EXUQvo4Sr0V2/HJD1XdXxWuMgnzfhGrNVWTZK8lO047YH5T/6z35VzMC1LjetvCZ0MoHFB7/JKN6jc33Gmv/5N4CdghRVasLjLFuYialrqWovNg/KH2PKZ0wCVIdjVUlZ7C/BTdnfZiVUR9RUe1BcR9EMEGMg1kOKkbKHqwtPULtz/KbKlVsDN+6SSLFgaqsYVSKC3yrEX0YrwJtnSJVhyljknZgoScvcpN74bXYI+Y0dG655qQSiw7H1J6gi5WuEjVrQlxHLHjX2LH5xZCxrNBnW5VzGtXQDO502ELZcnHcgIaWoLKmbLoZJsPyvoJuBVD7smDbAaWDu6kKnSjJ4VHekSzXB8/XOEvvSWtYCli5UJPUQpyI2hRAoYTRexMb50l/Uj769sR+j3qgYamwIpI4nSk3IJwDLTBNPFy9Ng+oe1cqTxkiJwJZhTDE0Cc37gZ87q1T5A9/8aS8POjLPg0G8oqo6DCTd1WiH7b3nxrA/9qpcrUq3zgHPeDCsx53Ivo403d5faF4grm/1Bex1ZzcChw1spEmXFWTFzKxFg7Dn6FB0pZU9bJ7YjPYy+eRk1pH9FEd0jd/zFgKqv10AUOal/klo+vqMijJBFUB/Uh1memU=
   - secure: hv0p+hJRWGZPcy+5H8BaxMUdUnNA+nnRanuLSh60sDGF2Gjhs8XpC1tdxHrPMKJ/1/4r/kODcIo5jlWd8aT3VpONQNpmZe1MK7LjvNwgRr28RdUevBbg7bXrQ8/l44RLfagkIdwTMBzaxPBOEilLoWA7ffOF2o8G3KIM2i0ATkOFSLj+gJtlBXA8xXDTPDPXen/N/Qi6dbTivHfDQpNKEnBGtkScfM1lYIRwepG/fXrOB+ZQO+DuBaERpdyuRNiAT7GF6dQnstLEhyFWlFagDdM9GYnQgYPCyyLGHm5FJ2GT5BgQTd8zp3EQnB7+BkP03ItMnMGZtRRaUd7LRtbpuAk21SXvKx/EROeud86ciJInHKp2ibjvUMErpeYy2/1EDi0yuOfh4p86yebUsk1q2tucFK35U0nJYc7uGN7rb7dy1lyk5ia7lnRAV9wFfkPvI9P7qtegWOYtfARuK5sCbtzMRW/0KQm1EWnq5T6gkWPIEZeZ1pDq3TKuDrUFnZCvA1BpjWG2bkh/GYVwV6UaXegtaGPoYCrc7v7GisCMlkxUnygsmNw1B2Dd91dDFURh8u1iZo2ElswbZQ5fJbSxg5cPG4y0XQZ2eSeU5n4E5heLNMyh7NTw7rRZOMsi43BcAbSnKRn+vgwNdi58w0R0fUJxEUlIdgbGHkeZoXNKgtE=
-  
