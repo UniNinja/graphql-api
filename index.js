@@ -5,7 +5,14 @@ const util = require('util');
 
 
 // DATABASE SETUP
-var uri = process.env.MONGODB_URI;
+var uri = "mongodb://"
+            + process.env.MONGODB_USERNAME + ":"
+            + process.env.MONGODB_PASSWORD
+            + "@unininja-cluster-shard-00-00-d1bwx.mongodb.net:27017,"
+            + "unininja-cluster-shard-00-01-d1bwx.mongodb.net:27017,"
+            + "unininja-cluster-shard-00-02-d1bwx.mongodb.net:27017"
+            + "/uni?ssl=true&replicaSet=unininja-cluster-shard-0&authSource=admin";
+
 var database = null;
 var databaseErr = null;
 var MongoClient = require('mongodb').MongoClient;
