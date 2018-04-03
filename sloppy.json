@@ -1,0 +1,23 @@
+{
+  "project": "unininja",
+  "services": [
+    {
+      "id": "api",
+      "apps": [
+        {
+          "id": "graphql-api",
+          "domain": {
+            "uri": "api.uni.ninja"
+          },
+          "ssl" : true,
+          "image": "581440852996.dkr.ecr.eu-west-2.amazonaws.com/unininja-api:latest",
+          "port_mappings": [
+            {
+              "container_port": 3000
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
