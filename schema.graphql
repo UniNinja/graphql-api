@@ -7,18 +7,40 @@ type Query {
 }
 
 type University {
-  pubukprn: String
-  name: String
-  url: String
+  pubukprn: String!
+  name: String!
+  url: String!
+  unionURL: String!
   color: String
-  courses: [Course]
-  location: LatLon
+  courses: [Course]!
+  lat: String!
+  lon: String!
+  institutionCostOfLiving: String
+  areaCostOfLiving: String
+  uniLocationType: LocationType
+  uniType: UniversityType
+  nearestTrainStation: String
 }
 
 type Course {
   # id: Int!
   # name: String!
-  #
-  # ucasCode: String!
-  Title: String
+  title: String!
+  courseURL: String!
+  years: Int!
+  placementYearAvaliable: Boolean
+  yearAbroadAvaliable: Boolean
+  degreeLabel: String
+  isHons: Boolean
+}
+
+enum LocationType{
+  CITY
+  SEASIDE_CITY
+  TOWN
+}
+
+enum UniversityType{
+  CAMPUS
+  CITY
 }
