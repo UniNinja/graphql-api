@@ -32,6 +32,7 @@ type Course {
   yearAbroadAvaliable: Boolean
   degreeLabel: String
   isHons: Boolean
+  rating: Int
 }
 
 enum LocationType{
