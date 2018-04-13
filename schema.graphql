@@ -2,7 +2,8 @@ scalar LatLon
 
 type Query {
   universities: [University]
-  courses: [Course]
+  courseList: [Course]
+  course: Course
   university(pubukprn: String!): University
 }
 

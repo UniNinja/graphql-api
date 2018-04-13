@@ -34,7 +34,8 @@ const schema = makeExecutableSchema({
   resolvers: {
     Query: {
       universities: () => getUniversities(),
-      courses: () => getCourses()
+      courseList: () => getCourses(),
+      course: () => getCourseInfo()
     }
   }
 });
@@ -50,6 +51,60 @@ function getCourses() {
   }).catch(err => console.log(err));
 
   return promise;
+}
+
+function getCourseInfo(pubukprn, kiscourseid) {
+
+  //Using sussexMComp as a default;
+  if (!pubukprn) {
+    var pubukprn = 10007806;
+  } else {
+    var pubukprn = this.pubukprn;
+  };
+  if (!kiscourseid) {
+    var kiscourseid = 37310;
+  } else {
+    var kiscourseid = this.kiscourseid;
+  };
+
+  fetch("http://data.unistats.ac.uk/api/v4/KIS/Institution/" + pubukprn + "/Course/" + kiscourseid + "/FullTime.json", {
+    headers: {
+      'Authorization': 'Basic TE1OTDBHUDZSM1dHVFBDNEJQTkM6cGFzc3dvcmQK'
+    }
+  }).then(function(response) {
+    // returns the succeeded promise to the next .then()
+    return response.json();
+
+  }).then(function(myJson) {
+    var placement = false;
+    var yearAbroad = false;
+    var hons = false;
+
+    if (myJson.SandwichAvailable > 0) {
+      placement = true;
+    }
+    if (myJson.YearAbroadAvaliable > 0) {
+      yearAbroad = true;
+    }
+
+    console.log("COURSE INFO:     " + myJson.Title);
+
+    // CREATE JSON TO RETURN;
+    var returnJson = {};
+
+    returnJson.title = myJson.Title + " " + myJson.KisAimLabel;
+    returnJson.courseURL = myJson.CoursePageUrl;
+    returnJson.years = myJson.LengthInYears;
+    returnJson.placementYearAvaliable = placement;
+    returnJson.yearAbroadAvaliable = yearAbroad;
+    returnJson.degreeLabel = myJson.KisAimLabel;
+    returnJson.isHons = myJson.Honours;
+
+    console.log("JSON RETURNED?:  " + JSON.stringify(course));
+
+    return returnJson;
+
+  }).catch(err => console.log(err));
 }
 
 function getUniversities() {
@@ -68,9 +123,9 @@ function getUniversities() {
       if (!(myUniList[i].Name.toLowerCase().includes("university"))) {
         console.log("ITEM DELETED: " + myUniList[i].Name.toLowerCase());
         myUniList.splice(i, 1);
-      } else if(!(expr.test(myUniList[i].Name.toLowerCase()))){
-           console.log("ITEM DELETED 2: " + myUniList[i].Name.toLowerCase());
-           myUniList.splice(i, 1);
+      } else if (!(expr.test(myUniList[i].Name.toLowerCase()))) {
+        console.log("ITEM DELETED 2: " + myUniList[i].Name.toLowerCase());
+        myUniList.splice(i, 1);
       }
 
       // IF WE NEED TO REPLACE THINGS ETC.
