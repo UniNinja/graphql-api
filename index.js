@@ -48,7 +48,7 @@ const schema = makeExecutableSchema({
 function getCourses() {
   const promise = fetch('http://unistats.ac.uk/api/v4/KIS/Institution/10007806/Courses.json', {
     headers: {
-      'Authorization': 'Basic TE1OTDBHUDZSM1dHVFBDNEJQTkM6cGFzc3dvcmQK'
+      'Authorization': `Basic ${process.env.UNISTATS_AUTH}`
     }
   }
 ).then(res => {
