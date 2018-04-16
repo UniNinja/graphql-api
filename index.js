@@ -35,7 +35,17 @@ const schema = makeExecutableSchema({
     Query: {
       universities: () => getUniversities(),
       courseList: () => getCourses(),
-      course: () => getCourseInfo()
+      course: (obj, args, context) => getCourseInfo(args.pubukprn, args.kiscourseid)
+        // const promise = getCourseInfo();
+        //
+        //  do shit here
+        // console.log("Promise Return: " +  promise);
+        //
+        // return promise;
+      // WORKING EXAMPLE
+      // var returnJson = {};
+      // returnJson.title = "LOIC";
+      // return {title: "LOIC"};
     }
   }
 });
@@ -56,18 +66,10 @@ function getCourses() {
 function getCourseInfo(pubukprn, kiscourseid) {
 
   //Using sussexMComp as a default;
-  if (!pubukprn) {
-    var pubukprn = 10007806;
-  } else {
-    var pubukprn = this.pubukprn;
-  };
-  if (!kiscourseid) {
-    var kiscourseid = 37310;
-  } else {
-    var kiscourseid = this.kiscourseid;
-  };
+  // Sussex pubukprn = 10007806
+  // Computer Science MComp = 37310
 
-  fetch("http://data.unistats.ac.uk/api/v4/KIS/Institution/" + pubukprn + "/Course/" + kiscourseid + "/FullTime.json", {
+  return fetch("http://data.unistats.ac.uk/api/v4/KIS/Institution/" + pubukprn + "/Course/" + kiscourseid + "/FullTime.json", {
     headers: {
       'Authorization': 'Basic TE1OTDBHUDZSM1dHVFBDNEJQTkM6cGFzc3dvcmQK'
     }
@@ -76,35 +78,43 @@ function getCourseInfo(pubukprn, kiscourseid) {
     return response.json();
 
   }).then(function(myJson) {
-    var placement = false;
-    var yearAbroad = false;
-    var hons = false;
+    return new Promise((resolve, reject) => {
+      var placement = false;
+      var yearAbroad = false;
+      var hons = false;
 
-    if (myJson.SandwichAvailable > 0) {
-      placement = true;
-    }
-    if (myJson.YearAbroadAvaliable > 0) {
-      yearAbroad = true;
-    }
+      if (myJson.SandwichAvailable > 0) {
+        placement = true;
+      }
+      if (myJson.YearAbroadAvaliable > 0) {
+        yearAbroad = true;
+      }
 
-    console.log("COURSE INFO:     " + myJson.Title);
+      console.log("COURSE INFO:     " + myJson.Title);
 
-    // CREATE JSON TO RETURN;
-    var returnJson = {};
+      // CREATE JSON TO RETURN;
+      var returnJson = {};
 
-    returnJson.title = myJson.Title + " " + myJson.KisAimLabel;
-    returnJson.courseURL = myJson.CoursePageUrl;
-    returnJson.years = myJson.LengthInYears;
-    returnJson.placementYearAvaliable = placement;
-    returnJson.yearAbroadAvaliable = yearAbroad;
-    returnJson.degreeLabel = myJson.KisAimLabel;
-    returnJson.isHons = myJson.Honours;
+      returnJson.title = myJson.Title + " " + myJson.KisAimLabel;
+      returnJson.courseURL = myJson.CoursePageUrl;
+      returnJson.years = myJson.LengthInYears;
+      returnJson.placementYearAvaliable = placement;
+      returnJson.yearAbroadAvaliable = yearAbroad;
+      returnJson.degreeLabel = myJson.KisAimLabel;
+      returnJson.isHons = myJson.Honours;
 
-    console.log("JSON RETURNED?:  " + JSON.stringify(course));
+      console.log(JSON.stringify(returnJson));
 
-    return returnJson;
+      if (returnJson) {
+        console.log("JSON RETURNED?:  YES");
+        resolve(returnJson);
+      } else {
+        console.log("JSON RETURNED?:  NO :(");
+        reject("Something went wrong but the promise flagged it up");
+      }
 
-  }).catch(err => console.log(err));
+    });
+  })
 }
 
 function getUniversities() {
