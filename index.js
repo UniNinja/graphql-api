@@ -33,31 +33,48 @@ const schema = makeExecutableSchema({
   typeDefs: readFileSync("schema.graphql", "utf8"),
   resolvers: {
     Query: {
+      university: () => getUniversity(),
       universities: () => getUniversities(),
-      courseList: () => getCourses(),
+      courseList: (obj, args, context) => getCourses(args.pubukprn),
       course: (obj, args, context) => getCourseInfo(args.pubukprn, args.kiscourseid)
-        // const promise = getCourseInfo();
-        //
-        //  do shit here
-        // console.log("Promise Return: " +  promise);
-        //
-        // return promise;
-      // WORKING EXAMPLE
-      // var returnJson = {};
-      // returnJson.title = "LOIC";
-      // return {title: "LOIC"};
+    },
+    University: {
+      courses: (obj, args, context) => getCourses(obj.pubukprn),
     }
   }
 });
 
-function getCourses() {
-  const promise = fetch('http://unistats.ac.uk/api/v4/KIS/Institution/10007806/Courses.json', {
+function getUniversity(){
+  
+}
+
+function getCourses(pubukprn) {
+  // Sussex pubukprn 10007806
+  const promise = fetch('http://data.unistats.ac.uk/api/v4/KIS/Institution/' + pubukprn + '/Courses.json?pageSize=300', {
     headers: {
       'Authorization': 'Basic TE1OTDBHUDZSM1dHVFBDNEJQTkM6cGFzc3dvcmQK'
     }
+  }).then(function(response) {
+    // returns the succeeded promise to the next .then()
+    return response.json();
+
   }).then(res => {
-    console.log(res);
-    return res.json();
+
+    console.log("RES: " + res);
+
+    const uniStatsResponse = res;
+
+    let newJson = [];
+
+    for (var i = 0; i < uniStatsResponse.length; i++) {
+      let newInnerJson = {};
+      newInnerJson.title = uniStatsResponse[i].Title;
+      newInnerJson.kiscourseid = uniStatsResponse[i].KisCourseId;
+      newInnerJson.isFullTime = uniStatsResponse[i].KisMode;
+      newJson.push(newInnerJson);
+    }
+
+    return newJson;
   }).catch(err => console.log(err));
 
   return promise;
