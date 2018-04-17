@@ -3,7 +3,13 @@ import fetch from 'node-fetch';
 const util = require('util');
 
 // DATABASE SETUP
-var uri = "mongodb://" + process.env.MONGODB_USERNAME + ":" + process.env.MONGODB_PASSWORD + "@unininja-cluster-shard-00-00-d1bwx.mongodb.net:27017," + "unininja-cluster-shard-00-01-d1bwx.mongodb.net:27017," + "unininja-cluster-shard-00-02-d1bwx.mongodb.net:27017" + "/uni?ssl=true&replicaSet=unininja-cluster-shard-0&authSource=admin";
+var uri = "mongodb://"
+            + process.env.MONGODB_USERNAME + ":"
+            + process.env.MONGODB_PASSWORD
+            + "@unininja-cluster-shard-00-00-d1bwx.mongodb.net:27017,"
+            + "unininja-cluster-shard-00-01-d1bwx.mongodb.net:27017,"
+            + "unininja-cluster-shard-00-02-d1bwx.mongodb.net:27017"
+            + "/uni?ssl=true&replicaSet=unininja-cluster-shard-0&authSource=admin";
 
 var database = null;
 var databaseErr = null;
@@ -33,26 +39,148 @@ const schema = makeExecutableSchema({
   typeDefs: readFileSync("schema.graphql", "utf8"),
   resolvers: {
     Query: {
-      university: () => getUniversity(),
+      // The querys that are avaliable to the client side.
+      university: (obj, args, context) => getUniversity(args.pubukprn),
       universities: () => getUniversities(),
       courseList: (obj, args, context) => getCourses(args.pubukprn),
       course: (obj, args, context) => getCourseInfo(args.pubukprn, args.kiscourseid)
     },
     University: {
+      // Adds the courses for a university as per the schema.
       courses: (obj, args, context) => getCourses(obj.pubukprn),
     }
   }
 });
 
-function getUniversity(){
-  
+
+/**
+  * Returns a list of all universities with their Name & pubukprn.
+  * @return {Object}  promise - The json list of all universities.
+  */
+function getUniversities() {
+
+  const promise = fetch('https://data.unistats.ac.uk/api/v4/KIS/Institutions.json?pageSize=1000', {
+    headers: {
+      'Authorization': 'Basic ' + process.env.UNISTATS_AUTH
+    }
+  }).then(function(response) {
+    return response.json();
+
+  }).then(function(myJson) {
+
+    var myUniList = myJson;
+
+    // REMOVE INSTITUTIONS THAT ARE NOT UNIVERSITIES
+    var expr = /university/;
+
+    for (var i = 0; i < myUniList.length; i++) {
+      if (!(myUniList[i].Name.toLowerCase().includes("university"))) {
+        console.log("ITEM DELETED: " + myUniList[i].Name.toLowerCase());
+        myUniList.splice(i, 1);
+
+      } else if (!(expr.test(myUniList[i].Name.toLowerCase()))) {
+        console.log("ITEM DELETED 2: " + myUniList[i].Name.toLowerCase());
+        myUniList.splice(i, 1);
+      }
+    }
+
+    // FORMAT THE DATA
+    let uniReturnList = [];
+    for (var i = 0; i < myUniList.length; i++) {
+        let innerUniJson = {};
+        innerUniJson.pubukprn = myUniList[i].UKPRN;
+        innerUniJson.name = myUniList[i].Name;
+        uniReturnList.push(innerUniJson);
+    }
+
+    console.log(uniReturnList);
+    console.log(uniReturnList.length);
+
+    return uniReturnList;
+  });
+  return promise;
 }
 
+
+
+/**
+  * Gets specific information for the requested university from MongoDB & Unistats.
+  * @param {string} pubukprn - The university identifier.
+  * @return {JSON OBJECT} promise - the JSON oject of university information.
+  */
+function getUniversity(pubukprn){
+  // Sussex pubukprn 10007806
+  const promise = fetch('http://data.unistats.ac.uk/api/v4/KIS/Institution/' + pubukprn + '.json', {
+    headers: {
+      'Authorization': 'Basic ' + process.env.UNISTATS_AUTH
+    }
+  }).then(function(response) {
+    // returns the succeeded promise to the next .then()
+    return response.json();
+
+  }).then(res => {
+
+
+    console.log("RES: " + res);
+
+    const uniStatsResponse = res;
+
+
+      let newJson = {};
+      newJson.pubukprn = uniStatsResponse.UKPRN;
+      newJson.name = uniStatsResponse.Name;
+      newJson.unionURL = uniStatsResponse.StudentUnionUrl;
+
+    return newJson;
+
+  }).then(resUniStats => {
+    const query = {
+      pubukprn: resUniStats.pubukprn
+    };
+
+    return database.collection("uni").findOne(query).then(university => {
+      return new Promise((resolve, reject) => {
+        console.log("UNIVERSITY: " + university);
+        resolve([university, resUniStats])
+      })
+    });
+  }).then(finalRes => {
+
+    console.log("FINAL RES 0: " + finalRes[0]);
+    console.log("FINAL RES 1: " + finalRes[1]);
+
+    const dbPromise = finalRes[0];
+    let finalResJson = finalRes[1];
+
+    finalResJson.url = dbPromise.url;
+    finalResJson.color = dbPromise.color;
+    finalResJson.lat = dbPromise.lat;
+    finalResJson.lon = dbPromise.lon;
+    finalResJson.averageRent = dbPromise.averageRent;
+    finalResJson.uniLocationType = dbPromise.uniLocationType;
+    finalResJson.uniType = dbPromise.uniType;
+    finalResJson.nearestTrainStation = dbPromise.nearestTrainStation;
+
+    console.log(JSON.stringify(finalResJson));
+
+    return finalResJson;
+
+  }).catch(err => console.log(err));
+
+  return promise;
+}
+
+/**
+  * Gets all the courses for a specific university.
+  * This will never usually be called by itself, but through a university.
+  * @param {string} pubukprn - The university identifier.
+  * @return {Array[Objects]} promise - An array of JSON objects for courses for the university.
+  */
 function getCourses(pubukprn) {
   // Sussex pubukprn 10007806
   const promise = fetch('http://data.unistats.ac.uk/api/v4/KIS/Institution/' + pubukprn + '/Courses.json?pageSize=300', {
     headers: {
-      'Authorization': 'Basic TE1OTDBHUDZSM1dHVFBDNEJQTkM6cGFzc3dvcmQK'
+      'Authorization': 'Basic ' + process.env.UNISTATS_AUTH
     }
   }).then(function(response) {
     // returns the succeeded promise to the next .then()
@@ -80,15 +208,21 @@ function getCourses(pubukprn) {
   return promise;
 }
 
+/**
+  * Gets specific information for the requested university from MongoDB & Unistats.
+  * @param {string} pubukprn - The university identifier.
+  * @param {string} kiscourseid - The course identifier.
+  * @return {JSON OBJECT} promise - the JSON oject of course information.
+  */
 function getCourseInfo(pubukprn, kiscourseid) {
 
-  //Using sussexMComp as a default;
+  // Using sussexMComp as a default;
   // Sussex pubukprn = 10007806
   // Computer Science MComp = 37310
 
   return fetch("http://data.unistats.ac.uk/api/v4/KIS/Institution/" + pubukprn + "/Course/" + kiscourseid + "/FullTime.json", {
     headers: {
-      'Authorization': 'Basic TE1OTDBHUDZSM1dHVFBDNEJQTkM6cGFzc3dvcmQK'
+      'Authorization': 'Basic ' + process.env.UNISTATS_AUTH
     }
   }).then(function(response) {
     // returns the succeeded promise to the next .then()
@@ -134,46 +268,6 @@ function getCourseInfo(pubukprn, kiscourseid) {
   })
 }
 
-function getUniversities() {
-
-  fetch('https://data.unistats.ac.uk/api/v4/KIS/Institutions.json?pageSize=1000', {
-    headers: {
-      'Authorization': 'Basic TE1OTDBHUDZSM1dHVFBDNEJQTkM6cGFzc3dvcmQK'
-    }
-  }).then(function(response) {
-    return response.json();
-  }).then(function(myJson) {
-    var myUniList = myJson;
-    var expr = /university/;
-    for (var i = 0; i < myUniList.length; i++) {
-      //console.log("IN FOR LOOP: " + i);
-      if (!(myUniList[i].Name.toLowerCase().includes("university"))) {
-        console.log("ITEM DELETED: " + myUniList[i].Name.toLowerCase());
-        myUniList.splice(i, 1);
-      } else if (!(expr.test(myUniList[i].Name.toLowerCase()))) {
-        console.log("ITEM DELETED 2: " + myUniList[i].Name.toLowerCase());
-        myUniList.splice(i, 1);
-      }
-
-      // IF WE NEED TO REPLACE THINGS ETC.
-      // }else {
-      //   var tempStr;
-      //   tempStr = JSON.stringify(myUniList[i]);
-      //   tempStr = tempStr.replace(/\"Name\":/g, "\"name\":");
-      //   myUniList[i] = JSON.parse(tempStr);
-      // }
-    }
-
-    console.log(myUniList);
-    console.log(myUniList.length);
-    return myUniList;
-  });
-}
-
-// function getUniversities() {
-//   const promise = database.collection("uni").find().toArray().then(obj => obj).catch(err => console.log(err));
-//   return promise;
-// }
 
 app.use('/v0', graphqlHTTP({schema, graphiql: true}));
 

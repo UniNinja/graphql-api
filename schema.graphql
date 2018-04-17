@@ -1,7 +1,7 @@
 scalar LatLon
 
 type Query {
-  universities: [University]
+  universities: [UniveristyList]
   courseList(pubukprn: String!): [Course]
   course(pubukprn: String!, kiscourseid: String!): Course
   university(pubukprn: String!): University
@@ -16,11 +16,15 @@ type University {
   courses: [Course]!
   lat: String!
   lon: String!
-  institutionCostOfLiving: String
-  areaCostOfLiving: String
+  averageRent: Float
   uniLocationType: LocationType
   uniType: UniversityType
   nearestTrainStation: String
+}
+
+type UniveristyList{
+  pubukprn: String!
+  name: String!
 }
 
 type Course {
