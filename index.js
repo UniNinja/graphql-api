@@ -11,18 +11,6 @@ var uri = "mongodb://"
             + "unininja-cluster-shard-00-02-d1bwx.mongodb.net:27017"
             + "/uni?ssl=true&replicaSet=unininja-cluster-shard-0&authSource=admin";
 
-var database = null;
-var databaseErr = null;
-var MongoClient = require('mongodb').MongoClient;
-
-MongoClient.connect(uri, function(err, connection) {
-  if (connection) {
-    database = connection.db(process.env.MONGODB_DATABASE);
-  } else {
-    databaseErr = err;
-  }
-});
-
 // GRAPHQL SETUP
 
 const {readFileSync} = require("fs");
@@ -34,6 +22,9 @@ const express = require('express');
 const graphqlHTTP = require('express-graphql');
 const graphql = require('graphql');
 const app = express();
+const MongoClient = require('mongodb').MongoClient;
+
+let database = null;
 
 const schema = makeExecutableSchema({
   typeDefs: readFileSync("schema.graphql", "utf8"),
@@ -61,7 +52,7 @@ function getUniversities() {
 
   const promise = fetch('https://data.unistats.ac.uk/api/v4/KIS/Institutions.json?pageSize=1000', {
     headers: {
-      'Authorization': 'Basic ' + process.env.UNISTATS_AUTH
+      'Authorization': `Basic ${process.env.UNISTATS_AUTH}`
     }
   }).then(function(response) {
     return response.json();
@@ -208,6 +199,65 @@ function getCourses(pubukprn) {
   return promise;
 }
 
+const send401Unauthorized = (res) => {
+  res
+    .status(401)
+    .set("WWW-Authenticate", "Basic realm=\"UniNinja API\"")
+    .send({
+      "errors": [
+        {
+          "message": "You must be authorised to use the UniNinja API."
+        }
+      ]
+    });
+}
+
+const send503ServerError = (res, msg) => {
+  const message = msg ? msg : "An internal server error occurred whilst using the UniNinja API. Please try again later."
+  res
+    .status(503)
+    .send({
+      "errors": [
+        {
+          "message": message
+        }
+      ]
+    });
+}
+
+app.use((req, res, next) => {
+  console.log("Connection initiated")
+  MongoClient.connect(uri).then(connection => {
+    console.log("Connection succeeded")
+    database = connection.db(process.env.MONGODB_DATABASE);
+    next();
+  }).catch(err => {
+    console.log("Connection failed")
+    send503ServerError(res, msg);
+  })
+});
+
+app.use((req, res, next) => {
+  const authHeader = req.get('Authorization');
+  if(authHeader) {
+    const apiKey = Buffer.from(authHeader.substring(6), 'base64').toString().split(":", 1)[0];
+    console.log("Db before", database)
+    database.collection('keys').find({key: apiKey}).toArray(function(err, result) {
+      if(err){
+        send503ServerError(res);
+      } else {
+        if(result.length > 0) {
+          next();
+        } else {
+          send401Unauthorized(res);
+        }
+      }
+    });
+    console.log("Db after", database)
+  } else {
+    send401Unauthorized(res);
+  }
+});
 /**
   * Gets specific information for the requested university from MongoDB & Unistats.
   * @param {string} pubukprn - The university identifier.
@@ -267,7 +317,6 @@ function getCourseInfo(pubukprn, kiscourseid) {
     });
   })
 }
-
 
 app.use('/v0', graphqlHTTP({schema, graphiql: true}));
 
