@@ -225,10 +225,8 @@ const send503ServerError = (res, msg) => {
     });
 }
 
-app.use((req, res, next) => {
-  console.log("Connection initiated")
+app.use('/v0', (req, res, next) => {
   MongoClient.connect(uri).then(connection => {
-    console.log("Connection succeeded")
     database = connection.db(process.env.MONGODB_DATABASE);
     next();
   }).catch(err => {
@@ -237,7 +235,7 @@ app.use((req, res, next) => {
   })
 });
 
-app.use((req, res, next) => {
+app.use('/v0', (req, res, next) => {
   const authHeader = req.get('Authorization');
   if(authHeader) {
     const apiKey = Buffer.from(authHeader.substring(6), 'base64').toString().split(":", 1)[0];
@@ -319,6 +317,10 @@ function getCourseInfo(pubukprn, kiscourseid) {
 }
 
 app.use('/v0', graphqlHTTP({schema, graphiql: true}));
+
+app.get('/', (req, res) => {
+  res.redirect('https://uni.ninja');
+});
 
 // run server on port 3000
 app.listen('3000', _ => console.log('Server is listening on port 3000...'))
