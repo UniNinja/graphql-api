@@ -225,7 +225,7 @@ const send503ServerError = (res, msg) => {
     });
 }
 
-app.use('v0', (req, res, next) => {
+app.use('/v0', (req, res, next) => {
   MongoClient.connect(uri).then(connection => {
     database = connection.db(process.env.MONGODB_DATABASE);
     next();
@@ -235,7 +235,7 @@ app.use('v0', (req, res, next) => {
   })
 });
 
-app.use((req, res, next) => {
+app.use('/v0', (req, res, next) => {
   const authHeader = req.get('Authorization');
   if(authHeader) {
     const apiKey = Buffer.from(authHeader.substring(6), 'base64').toString().split(":", 1)[0];
