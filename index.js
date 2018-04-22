@@ -225,10 +225,8 @@ const send503ServerError = (res, msg) => {
     });
 }
 
-app.use((req, res, next) => {
-  console.log("Connection initiated")
+app.use('v0', (req, res, next) => {
   MongoClient.connect(uri).then(connection => {
-    console.log("Connection succeeded")
     database = connection.db(process.env.MONGODB_DATABASE);
     next();
   }).catch(err => {
