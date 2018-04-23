@@ -20,7 +20,6 @@ before_deploy:
   .
 - docker tag unininja-api:latest 581440852996.dkr.ecr.eu-west-2.amazonaws.com/unininja-api:latest
 - docker push 581440852996.dkr.ecr.eu-west-2.amazonaws.com/unininja-api:latest
-- openssl aes-256-cbc -K $encrypted_598dd9693cea_key -iv $encrypted_598dd9693cea_iv -in deploy.sh.enc -out deploy.sh -d
 - chmod 777 deploy.sh
 - openssl aes-256-cbc -K $encrypted_598dd9693cea_key -iv $encrypted_598dd9693cea_iv -in deploy_rsa.enc -out /tmp/deploy_rsa -d
 - eval $(ssh-agent -s)
