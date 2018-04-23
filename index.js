@@ -305,8 +305,8 @@ function getCourseInfo (pubukprn, kiscourseid) {
 app.use('/v0', graphqlHTTP({schema, graphiql: true}))
 
 app.get('/', (req, res) => {
-  res.redirect('https://uni.ninja');
-});
+  res.redirect('https://uni.ninja')
+})
 
 // run server on port 3000
 app.listen('3000', _ => console.log('Server is listening on port 3000...'))
