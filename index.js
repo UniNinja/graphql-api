@@ -4,7 +4,7 @@ require('dotenv').config()
 require('util')
 
 // DATABASE SETUP
-var uri = 'mongodb://' +
+const uri = 'mongodb://' +
             process.env.MONGODB_USERNAME + ':' +
             process.env.MONGODB_PASSWORD +
             '@unininja-cluster-shard-00-00-d1bwx.mongodb.net:27017,' +
@@ -56,12 +56,12 @@ function getUniversities () {
   }).then(function (response) {
     return response.json()
   }).then(function (myJson) {
-    var myUniList = myJson
+    let myUniList = myJson
 
     // REMOVE INSTITUTIONS THAT ARE NOT UNIVERSITIES
-    // var expr = /university/;
+    // let expr = /university/;
 
-    // for (var i = 0; i < myUniList.length; i++) {
+    // for (let i = 0; i < myUniList.length; i++) {
     //   if (!(myUniList[i].Name.toLowerCase().includes('university'))) {
     //     console.log('ITEM DELETED: ' + myUniList[i].Name.toLowerCase());
     //     myUniList.splice(i, 1);
@@ -74,7 +74,7 @@ function getUniversities () {
 
     // FORMAT THE DATA
     let uniReturnList = []
-    for (var i = 0; i < myUniList.length; i++) {
+    for (let i = 0; i < myUniList.length; i++) {
       let innerUniJson = {}
       innerUniJson.pubukprn = myUniList[i].UKPRN
       innerUniJson.name = myUniList[i].Name
@@ -170,7 +170,7 @@ function getCourses (pubukprn) {
     const uniStatsResponse = res
     let newJson = []
 
-    for (var i = 0; i < uniStatsResponse.length; i++) {
+    for (let i = 0; i < uniStatsResponse.length; i++) {
       let newInnerJson = {}
       newInnerJson.title = uniStatsResponse[i].Title
       newInnerJson.kiscourseid = uniStatsResponse[i].KisCourseId
@@ -265,9 +265,9 @@ function getCourseInfo (pubukprn, kiscourseid) {
     return response.json()
   }).then(function (myJson) {
     return new Promise((resolve, reject) => {
-      var placement = false
-      var yearAbroad = false
-      // var hons = false;
+      let placement = false
+      let yearAbroad = false
+      // let hons = false;
 
       if (myJson.SandwichAvailable > 0) {
         placement = true
@@ -279,7 +279,7 @@ function getCourseInfo (pubukprn, kiscourseid) {
       console.log('COURSE INFO:     ' + myJson.Title)
 
       // CREATE JSON TO RETURN;
-      var returnJson = {}
+      let returnJson = {}
 
       returnJson.title = myJson.Title + ' ' + myJson.KisAimLabel
       returnJson.courseURL = myJson.CoursePageUrl
