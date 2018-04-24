@@ -14,6 +14,7 @@ const uri = 'mongodb://' +
 
 // GRAPHQL SETUP
 let database = null
+let dbConnection = null
 
 const {readFileSync} = require('fs')
 const {makeExecutableSchema} = require('graphql-tools')
@@ -126,7 +127,7 @@ function getUniversity (pubukprn) {
     return finalResJson
   }).then(finalResJson2 => {
     // Close the Database Connection.
-    // database.close()
+    // mongoclient.close()
     return finalResJson2
   }).catch(err => console.log(err))
   return promise
@@ -198,6 +199,7 @@ app.use('/v0', (req, res, next) => {
   console.log('Connection initiated')
   MongoClient.connect(uri).then(connection => {
     console.log('Connection succeeded')
+    dbConnection = connection
     database = connection.db(process.env.MONGODB_DATABASE)
     next()
   }).catch(err => {
@@ -285,7 +287,37 @@ function getCourseInfo (pubukprn, kiscourseid) {
   })
 }
 
-app.use('/v0', graphqlHTTP({schema, graphiql: true}))
+const { PassThrough } = require('stream')
+
+function graphqlMiddlewareWrapper (graphqlMiddleware) {
+  return (req, res, next) => {
+    const resProxy = new PassThrough()
+    resProxy.headers = new Map()
+    resProxy.statusCode = 200
+    resProxy.setHeader = (name, value) => {
+      resProxy.headers.set(name, value)
+    }
+    res.graphqlResponse = (cb) => {
+      res.statusCode = resProxy.statusCode
+      resProxy.headers.forEach((value, name) => {
+        res.setHeader(name, value)
+      })
+      resProxy.pipe(res).on('finish', cb)
+    }
+    graphqlMiddleware(req, resProxy).then(() => next(), next)
+  }
+}
+
+app.use('/v0',
+  graphqlMiddlewareWrapper(
+    graphqlHTTP({schema, graphiql: true})
+  ),
+  (req, res, next) => {
+    dbConnection.close()
+    console.log('Database connection closed')
+    res.graphqlResponse(next)
+  }
+)
 
 app.get('/', (req, res) => {
   res.redirect('https://uni.ninja')
