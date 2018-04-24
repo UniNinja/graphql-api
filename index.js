@@ -13,18 +13,14 @@ const uri = 'mongodb://' +
             '/uni?ssl=true&replicaSet=unininja-cluster-shard-0&authSource=admin'
 
 // GRAPHQL SETUP
+let database = null
 
-// const bodyParser = require('body-parser')
-// const {graphqlExpress, graphiqlExpress} = require('apollo-server-express')
-// const graphql = require('graphql')
 const {readFileSync} = require('fs')
 const {makeExecutableSchema} = require('graphql-tools')
 const express = require('express')
 const graphqlHTTP = require('express-graphql')
 const app = express()
 const MongoClient = require('mongodb').MongoClient
-
-let database = null
 
 const schema = makeExecutableSchema({
   typeDefs: readFileSync('schema.graphql', 'utf8'),
@@ -58,19 +54,7 @@ function getUniversities () {
   }).then(function (myJson) {
     let myUniList = myJson
 
-    // REMOVE INSTITUTIONS THAT ARE NOT UNIVERSITIES
-    // let expr = /university/;
-
-    // for (let i = 0; i < myUniList.length; i++) {
-    //   if (!(myUniList[i].Name.toLowerCase().includes('university'))) {
-    //     console.log('ITEM DELETED: ' + myUniList[i].Name.toLowerCase());
-    //     myUniList.splice(i, 1);
-    //
-    //   } else if (!(expr.test(myUniList[i].Name.toLowerCase()))) {
-    //     console.log('ITEM DELETED 2: ' + myUniList[i].Name.toLowerCase());
-    //     myUniList.splice(i, 1);
-    //   }
-    // }
+    // (Potentially) REMOVE/FILTER INSTITUTIONS THAT ARE NOT UNIVERSITIES
 
     // FORMAT THE DATA
     let uniReturnList = []
@@ -80,10 +64,6 @@ function getUniversities () {
       innerUniJson.name = myUniList[i].Name
       uniReturnList.push(innerUniJson)
     }
-
-    console.log(uniReturnList)
-    console.log(uniReturnList.length)
-
     return uniReturnList
   })
   return promise
@@ -126,8 +106,8 @@ function getUniversity (pubukprn) {
       })
     })
   }).then(finalRes => {
-    console.log('FINAL RES 0: ' + finalRes[0])
-    console.log('FINAL RES 1: ' + finalRes[1])
+    // console.log('FINAL RES 0: ' + finalRes[0])
+    // console.log('FINAL RES 1: ' + finalRes[1])
 
     const dbPromise = finalRes[0]
     let finalResJson = finalRes[1]
@@ -144,6 +124,10 @@ function getUniversity (pubukprn) {
     console.log(JSON.stringify(finalResJson))
 
     return finalResJson
+  }).then(finalResJson2 => {
+    // Close the Database Connection.
+    // database.close()
+    return finalResJson2
   }).catch(err => console.log(err))
   return promise
 }
@@ -217,7 +201,7 @@ app.use('/v0', (req, res, next) => {
     database = connection.db(process.env.MONGODB_DATABASE)
     next()
   }).catch(err => {
-    console.log('Connection failed')
+    console.log('Connection failed: ' + err.message)
     send503ServerError(res, err.message)
   })
 })
@@ -267,7 +251,6 @@ function getCourseInfo (pubukprn, kiscourseid) {
     return new Promise((resolve, reject) => {
       let placement = false
       let yearAbroad = false
-      // let hons = false;
 
       if (myJson.SandwichAvailable > 0) {
         placement = true
@@ -276,7 +259,7 @@ function getCourseInfo (pubukprn, kiscourseid) {
         yearAbroad = true
       }
 
-      console.log('COURSE INFO:     ' + myJson.Title)
+      // console.log('COURSE INFO:     ' + myJson.Title)
 
       // CREATE JSON TO RETURN;
       let returnJson = {}
@@ -289,7 +272,7 @@ function getCourseInfo (pubukprn, kiscourseid) {
       returnJson.degreeLabel = myJson.KisAimLabel
       returnJson.isHons = myJson.Honours
 
-      console.log(JSON.stringify(returnJson))
+      // console.log(JSON.stringify(returnJson))
 
       if (returnJson) {
         console.log('JSON RETURNED?:  YES')
@@ -305,8 +288,8 @@ function getCourseInfo (pubukprn, kiscourseid) {
 app.use('/v0', graphqlHTTP({schema, graphiql: true}))
 
 app.get('/', (req, res) => {
-  res.redirect('https://uni.ninja');
-});
+  res.redirect('https://uni.ninja')
+})
 
 // run server on port 3000
 app.listen('3000', _ => console.log('Server is listening on port 3000...'))
