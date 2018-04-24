@@ -10,12 +10,12 @@ type Query {
 type University {
   pubukprn: String!
   name: String!
-  url: String!
-  unionURL: String!
+  url: String
+  unionURL: String
   color: String
-  courses: [Course]!
-  lat: String!
-  lon: String!
+  courses: [Course]
+  lat: String
+  lon: String
   averageRent: Float
   uniLocationType: LocationType
   uniType: UniversityType
