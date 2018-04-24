@@ -4,13 +4,7 @@ require('dotenv').config()
 require('util')
 
 // DATABASE SETUP
-const uri = 'mongodb://' +
-            process.env.MONGODB_USERNAME + ':' +
-            process.env.MONGODB_PASSWORD +
-            '@unininja-cluster-shard-00-00-d1bwx.mongodb.net:27017,' +
-            'unininja-cluster-shard-00-01-d1bwx.mongodb.net:27017,' +
-            'unininja-cluster-shard-00-02-d1bwx.mongodb.net:27017' +
-            '/uni?ssl=true&replicaSet=unininja-cluster-shard-0&authSource=admin'
+const uri = 'mongodb://' + process.env.MONGODB_USERNAME + ':' + process.env.MONGODB_PASSWORD + '@unininja-cluster-shard-00-00-d1bwx.mongodb.net:27017,' + 'unininja-cluster-shard-00-01-d1bwx.mongodb.net:27017,' + 'unininja-cluster-shard-00-02-d1bwx.mongodb.net:27017' + '/uni?ssl=true&replicaSet=unininja-cluster-shard-0&authSource=admin'
 
 // GRAPHQL SETUP
 let database = null
@@ -113,14 +107,16 @@ function getUniversity (pubukprn) {
     const dbPromise = finalRes[0]
     let finalResJson = finalRes[1]
 
-    finalResJson.url = dbPromise.url
-    finalResJson.color = dbPromise.color
-    finalResJson.lat = dbPromise.lat
-    finalResJson.lon = dbPromise.lon
-    finalResJson.averageRent = dbPromise.averageRent
-    finalResJson.uniLocationType = dbPromise.uniLocationType
-    finalResJson.uniType = dbPromise.uniType
-    finalResJson.nearestTrainStation = dbPromise.nearestTrainStation
+    if (dbPromise) {
+      finalResJson.url = dbPromise.url
+      finalResJson.color = dbPromise.color
+      finalResJson.lat = dbPromise.lat
+      finalResJson.lon = dbPromise.lon
+      finalResJson.averageRent = dbPromise.averageRent
+      finalResJson.uniLocationType = dbPromise.uniLocationType
+      finalResJson.uniType = dbPromise.uniType
+      finalResJson.nearestTrainStation = dbPromise.nearestTrainStation
+    }
 
     console.log(JSON.stringify(finalResJson))
 
@@ -165,34 +161,28 @@ function getCourses (pubukprn) {
 
     return newJson
   }).catch(err => console.log(err))
-
   return promise
 }
 
 const send401Unauthorized = (res) => {
-  res
-    .status(401)
-    .set('WWW-Authenticate', 'Basic realm=\'UniNinja API\'')
-    .send({
-      'errors': [
-        {
-          'message': 'You must be authorised to use the UniNinja API.'
-        }
-      ]
-    })
+  res.status(401).set('WWW-Authenticate', 'Basic realm=\'UniNinja API\'').send({
+    'errors': [
+      {
+        'message': 'You must be authorised to use the UniNinja API.'
+      }
+    ]
+  })
 }
 
 const send503ServerError = (res, msg) => {
   const message = msg || 'An internal server error occurred whilst using the UniNinja API. Please try again later.'
-  res
-    .status(503)
-    .send({
-      'errors': [
-        {
-          'message': message
-        }
-      ]
-    })
+  res.status(503).send({
+    'errors': [
+      {
+        'message': message
+      }
+    ]
+  })
 }
 
 app.use('/v0', (req, res, next) => {
@@ -287,7 +277,7 @@ function getCourseInfo (pubukprn, kiscourseid) {
   })
 }
 
-const { PassThrough } = require('stream')
+const {PassThrough} = require('stream')
 
 function graphqlMiddlewareWrapper (graphqlMiddleware) {
   return (req, res, next) => {
@@ -308,16 +298,11 @@ function graphqlMiddlewareWrapper (graphqlMiddleware) {
   }
 }
 
-app.use('/v0',
-  graphqlMiddlewareWrapper(
-    graphqlHTTP({schema, graphiql: true})
-  ),
-  (req, res, next) => {
-    dbConnection.close()
-    console.log('Database connection closed')
-    res.graphqlResponse(next)
-  }
-)
+app.use('/v0', graphqlMiddlewareWrapper(graphqlHTTP({schema, graphiql: true})), (req, res, next) => {
+  dbConnection.close()
+  console.log('Database connection closed')
+  res.graphqlResponse(next)
+})
 
 app.get('/', (req, res) => {
   res.redirect('https://uni.ninja')
