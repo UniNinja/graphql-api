@@ -3,7 +3,7 @@ scalar LatLon
 type Query {
   universities: [UniveristyList]
   courseList(pubukprn: String!): [Course]
-  course(pubukprn: String!, kiscourseid: String!): Course
+  course(pubukprn: String!, kiscourseid: String!, isFullTime: String!): Course
   university(pubukprn: String!): University
 }
 
@@ -13,7 +13,7 @@ type University {
   url: String
   unionURL: String
   color: String
-  courses: [Course]
+  courses: [Course]!
   lat: String
   lon: String
   averageRent: Float
@@ -29,15 +29,14 @@ type UniveristyList{
 
 type Course {
   title: String!
-  kiscourseid: String!
-  isFullTime: String!
+  kiscourseid: String
+  isFullTime: String
   courseURL: String
   years: Int
   placementYearAvaliable: Boolean
   yearAbroadAvaliable: Boolean
   degreeLabel: String
   isHons: Boolean
-  rating: Int
 }
 
 enum LocationType{

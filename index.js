@@ -25,7 +25,7 @@ const schema = makeExecutableSchema({
       university: (obj, args, context) => getUniversity(args.pubukprn),
       universities: () => getUniversities(),
       courseList: (obj, args, context) => getCourses(args.pubukprn),
-      course: (obj, args, context) => getCourseInfo(args.pubukprn, args.kiscourseid)
+      course: (obj, args, context) => getCourseInfo(args.pubukprn, args.kiscourseid, args.isFullTime)
     },
     University: {
       // Adds the courses for a university as per the schema.
@@ -227,12 +227,12 @@ app.use('/v0', (req, res, next) => {
   * @return {JSON OBJECT} promise - the JSON oject of course information.
   */
 
-function getCourseInfo (pubukprn, kiscourseid) {
+function getCourseInfo (pubukprn, kiscourseid, FullTime) {
   // Using sussexMComp as a default;
   // Sussex pubukprn = 10007806
   // Computer Science MComp = 37310
 
-  return fetch('http://data.unistats.ac.uk/api/v4/KIS/Institution/' + pubukprn + '/Course/' + kiscourseid + '/FullTime.json', {
+  return fetch('http://data.unistats.ac.uk/api/v4/KIS/Institution/' + pubukprn + '/Course/' + kiscourseid + '/' + FullTime + '.json', {
     headers: {
       'Authorization': 'Basic ' + process.env.UNISTATS_AUTH
     }
@@ -257,8 +257,14 @@ function getCourseInfo (pubukprn, kiscourseid) {
       let returnJson = {}
 
       returnJson.title = myJson.Title + ' ' + myJson.KisAimLabel
+      returnJson.kiscourseid = kiscourseid
+      returnJson.isFullTime = FullTime
       returnJson.courseURL = myJson.CoursePageUrl
-      returnJson.years = myJson.LengthInYears
+
+      if (myJson.LengthInYears) {
+        returnJson.years = parseInt(myJson.LengthInYears)
+      }
+
       returnJson.placementYearAvaliable = placement
       returnJson.yearAbroadAvaliable = yearAbroad
       returnJson.degreeLabel = myJson.KisAimLabel
