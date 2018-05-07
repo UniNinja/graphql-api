@@ -32,8 +32,8 @@ type Course {
   isFullTime: Boolean
   courseURL: String
   years: Int
-  placementYearAvaliable: Boolean
-  yearAbroadAvaliable: Boolean
+  placementYearAvailable: Boolean
+  yearAbroadAvailable: Boolean
   degreeLabel: String
   isHons: Boolean
 }
