@@ -10,7 +10,7 @@ This is the repository for the UniNinja GraphQL API.
 
 ## Documentation
 
-The API is hosted at https://api.uni.ninja/v0. The documentation can be found [here](https://uni.ninja).
+The API is hosted at https://api.uni.ninja/v1. The documentation can be found [here](https://uni.ninja).
 
 ## Contributing
 
