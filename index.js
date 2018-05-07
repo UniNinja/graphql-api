@@ -185,7 +185,7 @@ function getCourseInfo (pubukprn, kiscourseid, fullTime) {
       if (myJson.SandwichAvailable > 0) {
         placement = true
       }
-      if (myJson.YearAbroadAvaliable > 0) {
+      if (myJson.YearAbroadAvailable > 0) {
         yearAbroad = true
       }
 
@@ -200,8 +200,8 @@ function getCourseInfo (pubukprn, kiscourseid, fullTime) {
         returnJson.years = parseInt(myJson.LengthInYears)
       }
 
-      returnJson.placementYearAvaliable = placement
-      returnJson.yearAbroadAvaliable = yearAbroad
+      returnJson.placementYearAvailable = placement
+      returnJson.yearAbroadAvailable = yearAbroad
       returnJson.degreeLabel = myJson.KisAimLabel
       returnJson.isHons = myJson.Honours
 
