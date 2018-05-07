@@ -1,6 +1,6 @@
 {
   "name": "unininja-api",
-  "version": "0.2.2",
+  "version": "1.0.0",
   "description": "The graphQL Api for UniNinja",
   "main": "index.js",
   "scripts": {
@@ -27,6 +27,7 @@
   "devDependencies": {
     "babel-cli": "^6.26.0",
     "babel-preset-env": "^1.6.1",
+    "babel-preset-es2017": "^6.24.1",
     "standard": "^11.0.1"
   },
   "repository": {
