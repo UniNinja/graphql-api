@@ -3,7 +3,7 @@ scalar LatLon
 type Query {
   universities: [University]
   courses(pubukprn: String!): [Course]
-  course(pubukprn: String!, kiscourseid: String!): Course
+  course(pubukprn: String!, kiscourseid: String!, isFullTime: FullTime!): Course
   university(pubukprn: String!): University
 }
 
@@ -30,7 +30,7 @@ type Campus {
 type Course {
   title: String!
   kiscourseid: String!
-  isFullTime: Boolean
+  isFullTime: FullTime
   courseURL: String
   years: Int
   placementYearAvailable: Boolean
@@ -55,6 +55,11 @@ enum LocationType {
   CITY
   SEASIDE_CITY
   TOWN
+}
+
+enum FullTime {
+  FullTime
+  PartTime
 }
 
 enum UniversityType {

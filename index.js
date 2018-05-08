@@ -193,7 +193,7 @@ function getCourseInfo (pubukprn, kiscourseid, fullTime) {
 
       returnJson.title = myJson.KisAimLabel + ' ' + (myJson.Honours ? '(Hons) ' : '') + myJson.Title
       returnJson.kiscourseid = kiscourseid
-      returnJson.isFullTime = fullTime === 'FullTime'
+      returnJson.isFullTime = fullTime
       returnJson.courseURL = myJson.CoursePageUrl
 
       if (myJson.LengthInYears) {
