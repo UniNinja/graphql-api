@@ -9,6 +9,7 @@ type Query {
 
 type University {
   name: String!
+  sortableName: String!
   pubukprn: String!
   campuses: [Campus]!
   uniType: UniversityType

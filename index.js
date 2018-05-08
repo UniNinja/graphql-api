@@ -64,7 +64,7 @@ const schema = makeExecutableSchema({
   * @return {Object}  promise - The json list of all universities.
   */
 function getUniversities () {
-  return database.collection('unis').find().toArray()
+  return database.collection('unis').find().sort({ sortableName: 1 }).toArray()
 }
 
 /**
