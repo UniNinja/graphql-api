@@ -1,51 +1,62 @@
 scalar LatLon
 
 type Query {
-  universities: [UniveristyList]
-  courseList(pubukprn: String!): [Course]
+  universities: [University]
+  courses(pubukprn: String!): [Course]
   course(pubukprn: String!, kiscourseid: String!, isFullTime: String!): Course
   university(pubukprn: String!): University
 }
 
 type University {
-  pubukprn: String!
   name: String!
-  url: String
-  unionURL: String
-  color: String
-  courses: [Course]!
-  lat: String
-  lon: String
-  averageRent: Float
-  uniLocationType: LocationType
+  pubukprn: String!
+  campuses: [Campus]!
   uniType: UniversityType
-  nearestTrainStation: String
+  unionUrl: String
+  url: String
+  color: String
+  courses: [Course]
 }
 
-type UniveristyList{
-  pubukprn: String!
-  name: String!
+type Campus {
+  name: String
+  location: Location!
+  locationType: LocationType
+  nearestTrainStation: TrainStation
+  averageRent: Float
 }
 
 type Course {
   title: String!
-  kiscourseid: String
-  isFullTime: String
+  kiscourseid: String!
+  isFullTime: Boolean
   courseURL: String
   years: Int
-  placementYearAvaliable: Boolean
-  yearAbroadAvaliable: Boolean
+  placementYearAvailable: Boolean
+  yearAbroadAvailable: Boolean
   degreeLabel: String
   isHons: Boolean
 }
 
-enum LocationType{
+type Location {
+  lat: Float!
+  lon: Float!
+}
+
+type TrainStation {
+  name: String!
+  code: String
+  location: Location!
+  distance: Float!
+}
+
+enum LocationType {
   CITY
   SEASIDE_CITY
   TOWN
 }
 
-enum UniversityType{
+enum UniversityType {
   CAMPUS
   CITY
 }

@@ -1,35 +1,60 @@
 import fetch from 'node-fetch'
+import {readFileSync} from 'fs'
+import {makeExecutableSchema} from 'graphql-tools'
+import express from 'express'
+import graphqlHTTP from 'express-graphql'
+import {MongoClient} from 'mongodb'
+import {PassThrough} from 'stream'
 
-require('dotenv').config()
-require('util')
+const app = express()
+const MAJOR_VERSION_NUMBER = '/v1'
+const uri = 'mongodb://' + process.env.MONGODB_USERNAME +
+  ':' + process.env.MONGODB_PASSWORD +
+  '@unininja-cluster-shard-00-00-d1bwx.mongodb.net:27017,' +
+  'unininja-cluster-shard-00-01-d1bwx.mongodb.net:27017,' +
+  'unininja-cluster-shard-00-02-d1bwx.mongodb.net:27017' +
+  '/uni?ssl=true&replicaSet=unininja-cluster-shard-0&authSource=admin'
 
-// DATABASE SETUP
-const uri = 'mongodb://' + process.env.MONGODB_USERNAME + ':' + process.env.MONGODB_PASSWORD + '@unininja-cluster-shard-00-00-d1bwx.mongodb.net:27017,' + 'unininja-cluster-shard-00-01-d1bwx.mongodb.net:27017,' + 'unininja-cluster-shard-00-02-d1bwx.mongodb.net:27017' + '/uni?ssl=true&replicaSet=unininja-cluster-shard-0&authSource=admin'
-
-// GRAPHQL SETUP
 let database = null
 let dbConnection = null
-
-const {readFileSync} = require('fs')
-const {makeExecutableSchema} = require('graphql-tools')
-const express = require('express')
-const graphqlHTTP = require('express-graphql')
-const app = express()
-const MongoClient = require('mongodb').MongoClient
 
 const schema = makeExecutableSchema({
   typeDefs: readFileSync('schema.graphql', 'utf8'),
   resolvers: {
     Query: {
-      // The querys that are avaliable to the client side.
       university: (obj, args, context) => getUniversity(args.pubukprn),
       universities: () => getUniversities(),
-      courseList: (obj, args, context) => getCourses(args.pubukprn),
+      courses: (obj, args, context) => getCourses(args.pubukprn),
       course: (obj, args, context) => getCourseInfo(args.pubukprn, args.kiscourseid, args.isFullTime)
     },
     University: {
-      // Adds the courses for a university as per the schema.
-      courses: (obj, args, context) => getCourses(obj.pubukprn)
+      courses: (obj, args, context) => getCourses(obj.pubukprn),
+      campuses: (obj, args, context) => {
+        return obj.campuses.map(campus => ({
+          name: campus.name,
+          location: campus.location,
+          locationType: campus.locationType,
+          nearestTrainStation: campus.nearestStation,
+          averageRent: campus.averageRent
+        }))
+      }
+    },
+    Campus: {
+      nearestTrainStation: (obj, args, context) => {
+        if (obj.nearestTrainStation) {
+          return {
+            name: obj.nearestTrainStation.name,
+            code: obj.nearestTrainStation.code,
+            location: obj.nearestTrainStation.location,
+            distance: obj.nearestTrainStation.distance
+          }
+        } else {
+          return null
+        }
+      }
+    },
+    TrainStation: {
+      location: (obj, args, context) => ({lat: obj.location.lat, lon: obj.location.lon})
     }
   }
 })
@@ -38,30 +63,8 @@ const schema = makeExecutableSchema({
   * Returns a list of all universities with their Name & pubukprn.
   * @return {Object}  promise - The json list of all universities.
   */
-
 function getUniversities () {
-  const promise = fetch('https://data.unistats.ac.uk/api/v4/KIS/Institutions.json?pageSize=1000', {
-    headers: {
-      'Authorization': `Basic ${process.env.UNISTATS_AUTH}`
-    }
-  }).then(function (response) {
-    return response.json()
-  }).then(function (myJson) {
-    let myUniList = myJson
-
-    // (Potentially) REMOVE/FILTER INSTITUTIONS THAT ARE NOT UNIVERSITIES
-
-    // FORMAT THE DATA
-    let uniReturnList = []
-    for (let i = 0; i < myUniList.length; i++) {
-      let innerUniJson = {}
-      innerUniJson.pubukprn = myUniList[i].UKPRN
-      innerUniJson.name = myUniList[i].Name
-      uniReturnList.push(innerUniJson)
-    }
-    return uniReturnList
-  })
-  return promise
+  return database.collection('unis').find().toArray()
 }
 
 /**
@@ -71,62 +74,7 @@ function getUniversities () {
   */
 
 function getUniversity (pubukprn) {
-  // Sussex pubukprn 10007806
-  const promise = fetch('http://data.unistats.ac.uk/api/v4/KIS/Institution/' + pubukprn + '.json', {
-    headers: {
-      'Authorization': 'Basic ' + process.env.UNISTATS_AUTH
-    }
-  }).then(function (response) {
-    // returns the succeeded promise to the next .then()
-    return response.json()
-  }).then(res => {
-    console.log('RES: ' + res)
-
-    const uniStatsResponse = res
-    let newJson = {}
-    newJson.pubukprn = uniStatsResponse.UKPRN
-    newJson.name = uniStatsResponse.Name
-    newJson.unionURL = uniStatsResponse.StudentUnionUrl
-
-    return newJson
-  }).then(resUniStats => {
-    const query = {
-      pubukprn: resUniStats.pubukprn
-    }
-
-    return database.collection('uni').findOne(query).then(university => {
-      return new Promise((resolve, reject) => {
-        console.log('UNIVERSITY: ' + university)
-        resolve([university, resUniStats])
-      })
-    })
-  }).then(finalRes => {
-    // console.log('FINAL RES 0: ' + finalRes[0])
-    // console.log('FINAL RES 1: ' + finalRes[1])
-
-    const dbPromise = finalRes[0]
-    let finalResJson = finalRes[1]
-
-    if (dbPromise) {
-      finalResJson.url = dbPromise.url
-      finalResJson.color = dbPromise.color
-      finalResJson.lat = dbPromise.lat
-      finalResJson.lon = dbPromise.lon
-      finalResJson.averageRent = dbPromise.averageRent
-      finalResJson.uniLocationType = dbPromise.uniLocationType
-      finalResJson.uniType = dbPromise.uniType
-      finalResJson.nearestTrainStation = dbPromise.nearestTrainStation
-    }
-
-    console.log(JSON.stringify(finalResJson))
-
-    return finalResJson
-  }).then(finalResJson2 => {
-    // Close the Database Connection.
-    // mongoclient.close()
-    return finalResJson2
-  }).catch(err => console.log(err))
-  return promise
+  return database.collection('unis').findOne({ pubukprn: pubukprn })
 }
 
 /**
@@ -135,19 +83,14 @@ function getUniversity (pubukprn) {
   * @param {string} pubukprn - The university identifier.
   * @return {Array[Objects]} promise - An array of JSON objects for courses for the university.
   */
-
 function getCourses (pubukprn) {
-  // Sussex pubukprn 10007806
   const promise = fetch('http://data.unistats.ac.uk/api/v4/KIS/Institution/' + pubukprn + '/Courses.json?pageSize=300', {
     headers: {
       'Authorization': 'Basic ' + process.env.UNISTATS_AUTH
     }
   }).then(function (response) {
-    // returns the succeeded promise to the next .then()
     return response.json()
   }).then(res => {
-    console.log('RES: ' + res)
-
     const uniStatsResponse = res
     let newJson = []
 
@@ -160,7 +103,13 @@ function getCourses (pubukprn) {
     }
 
     return newJson
-  }).catch(err => console.log(err))
+  }).then(res => {
+    const courses = []
+    for (let i = 0; i < res.length; i++) {
+      courses.push(getCourseInfo(pubukprn, res[i].kiscourseid, res[i].isFullTime))
+    }
+    return courses
+  }).catch(err => { throw new Error(err) })
   return promise
 }
 
@@ -185,24 +134,20 @@ const send503ServerError = (res, msg) => {
   })
 }
 
-app.use('/v0', (req, res, next) => {
-  console.log('Connection initiated')
+app.use(MAJOR_VERSION_NUMBER, (req, res, next) => {
   MongoClient.connect(uri).then(connection => {
-    console.log('Connection succeeded')
     dbConnection = connection
     database = connection.db(process.env.MONGODB_DATABASE)
     next()
   }).catch(err => {
-    console.log('Connection failed: ' + err.message)
     send503ServerError(res, err.message)
   })
 })
 
-app.use('/v0', (req, res, next) => {
+app.use(MAJOR_VERSION_NUMBER, (req, res, next) => {
   const authHeader = req.get('Authorization')
   if (authHeader) {
     const apiKey = Buffer.from(authHeader.substring(6), 'base64').toString().split(':', 1)[0]
-    console.log('Db before', database)
     database.collection('keys').find({key: apiKey}).toArray(function (err, result) {
       if (err) {
         send503ServerError(res, err.message)
@@ -214,7 +159,6 @@ app.use('/v0', (req, res, next) => {
         }
       }
     })
-    console.log('Db after', database)
   } else {
     send401Unauthorized(res)
   }
@@ -226,18 +170,12 @@ app.use('/v0', (req, res, next) => {
   * @param {string} kiscourseid - The course identifier.
   * @return {JSON OBJECT} promise - the JSON oject of course information.
   */
-
-function getCourseInfo (pubukprn, kiscourseid, FullTime) {
-  // Using sussexMComp as a default;
-  // Sussex pubukprn = 10007806
-  // Computer Science MComp = 37310
-
-  return fetch('http://data.unistats.ac.uk/api/v4/KIS/Institution/' + pubukprn + '/Course/' + kiscourseid + '/' + FullTime + '.json', {
+function getCourseInfo (pubukprn, kiscourseid, fullTime) {
+  return fetch('http://data.unistats.ac.uk/api/v4/KIS/Institution/' + pubukprn + '/Course/' + kiscourseid + '/' + fullTime + '.json', {
     headers: {
       'Authorization': 'Basic ' + process.env.UNISTATS_AUTH
     }
   }).then(function (response) {
-    // returns the succeeded promise to the next .then()
     return response.json()
   }).then(function (myJson) {
     return new Promise((resolve, reject) => {
@@ -247,43 +185,34 @@ function getCourseInfo (pubukprn, kiscourseid, FullTime) {
       if (myJson.SandwichAvailable > 0) {
         placement = true
       }
-      if (myJson.YearAbroadAvaliable > 0) {
+      if (myJson.YearAbroadAvailable > 0) {
         yearAbroad = true
       }
 
-      // console.log('COURSE INFO:     ' + myJson.Title)
-
-      // CREATE JSON TO RETURN;
       let returnJson = {}
 
-      returnJson.title = myJson.Title + ' ' + myJson.KisAimLabel
+      returnJson.title = myJson.KisAimLabel + ' ' + (myJson.Honours ? '(Hons) ' : '') + myJson.Title
       returnJson.kiscourseid = kiscourseid
-      returnJson.isFullTime = FullTime
+      returnJson.isFullTime = fullTime === 'FullTime'
       returnJson.courseURL = myJson.CoursePageUrl
 
       if (myJson.LengthInYears) {
         returnJson.years = parseInt(myJson.LengthInYears)
       }
 
-      returnJson.placementYearAvaliable = placement
-      returnJson.yearAbroadAvaliable = yearAbroad
+      returnJson.placementYearAvailable = placement
+      returnJson.yearAbroadAvailable = yearAbroad
       returnJson.degreeLabel = myJson.KisAimLabel
       returnJson.isHons = myJson.Honours
 
-      // console.log(JSON.stringify(returnJson))
-
       if (returnJson) {
-        console.log('JSON RETURNED?:  YES')
         resolve(returnJson)
       } else {
-        console.log('JSON RETURNED?:  NO :(')
         reject(new Error('Something went wrong but the promise flagged it up'))
       }
     })
   })
 }
-
-const {PassThrough} = require('stream')
 
 function graphqlMiddlewareWrapper (graphqlMiddleware) {
   return (req, res, next) => {
@@ -304,9 +233,8 @@ function graphqlMiddlewareWrapper (graphqlMiddleware) {
   }
 }
 
-app.use('/v0', graphqlMiddlewareWrapper(graphqlHTTP({schema, graphiql: true})), (req, res, next) => {
+app.use(MAJOR_VERSION_NUMBER, graphqlMiddlewareWrapper(graphqlHTTP({schema, graphiql: true})), (req, res, next) => {
   dbConnection.close()
-  console.log('Database connection closed')
   res.graphqlResponse(next)
 })
 
@@ -314,5 +242,4 @@ app.get('/', (req, res) => {
   res.redirect('https://uni.ninja')
 })
 
-// run server on port 3000
-app.listen('3000', _ => console.log('Server is listening on port 3000...'))
+app.listen('3000', _ => { console.log('Server is listening on port 3000...') })
