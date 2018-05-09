@@ -38,6 +38,7 @@ describe('Query universities', () => {
   it('list length', () => {
     expect.assertions(1)
     return getUniversityList().then(json => {
+      console.log('returned JSON', JSON.stringify(json))
       expect(json.data.universities.length).toEqual(152)
     }).catch(err => {
       console.log('list length error', err)
@@ -49,6 +50,7 @@ describe('Query universities', () => {
   it('to check name of sussex uni', async () => {
     expect.assertions(1)
     return getSussexUni().then(json => {
+      console.log('returned JSON', JSON.stringify(json))
       expect(json.data.university.name).toEqual("University Of Sussex")
     }).catch(err => {
       console.log('list length error', err)
