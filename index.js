@@ -140,7 +140,7 @@ app.use(MAJOR_VERSION_NUMBER, (req, res, next) => {
     database = connection.db(process.env.MONGODB_DATABASE)
     next()
   }).catch(err => {
-    send503ServerError(res, 'Could not connect to database: ' + err.message)
+    send503ServerError(res, 'Could not connect to database: ' + err.message + '\nConnection string: ' + uri)
   })
 })
 
