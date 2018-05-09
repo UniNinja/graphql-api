@@ -1,6 +1,6 @@
 import fetch from 'node-fetch'
 
-const endpoint = 'http://localhost:3000/v1'
+const endpoint = '127.0.0.1:3000/v1'
 
 const getQuery = (query) => ({
     method: "POST",
