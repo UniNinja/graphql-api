@@ -1,4 +1,4 @@
-FROM mhart/alpine-node
+FROM mhart/alpine-node:latest
 
 ARG MONGODB_USERNAME
 ENV MONGODB_USERNAME=$MONGODB_USERNAME
