@@ -21,7 +21,7 @@ function getUniversityList() {
   .then(res => res.json())
 }
 
-function getSussexUni() {
+function getSussexUni () {
   return fetch(endpoint, getQuery(`{
   university (pubukprn: "10007806") {
     name
@@ -39,6 +39,8 @@ describe('Query universities', () => {
     expect.assertions(1)
     return getUniversityList().then(json => {
       expect(json.data.universities.length).toEqual(152)
+    }).catch(err => {
+      console.log('list length error', err)
     })
   });
 
@@ -48,6 +50,8 @@ describe('Query universities', () => {
     expect.assertions(1)
     return getSussexUni().then(json => {
       expect(json.data.university.name).toEqual("University Of Sussex")
+    }).catch(err => {
+      console.log('list length error', err)
     })
   });
 
