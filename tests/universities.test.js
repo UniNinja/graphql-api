@@ -26,6 +26,9 @@ function getSussexUni () {
   university (pubukprn: "10007806") {
     name
     pubukprn
+    courses {
+      title
+    }
   }
 }`))
   .then(res => res.json())
@@ -33,28 +36,27 @@ function getSussexUni () {
 
 describe('Query universities', () => {
 
-// ================ TEST ONE ===========================
-
   it('list length', () => {
     expect.assertions(1)
     return getUniversityList().then(json => {
-      console.log('returned JSON', JSON.stringify(json))
       expect(json.data.universities.length).toEqual(152)
     }).catch(err => {
       console.log('list length error', err)
     })
   });
 
-  // ================ TEST THREE ===========================
-
-  it('to check name of sussex uni', async () => {
+  it('to check name of sussex uni', () => {
     expect.assertions(1)
     return getSussexUni().then(json => {
-      console.log('returned JSON', JSON.stringify(json))
       expect(json.data.university.name).toEqual("University Of Sussex")
-    }).catch(err => {
-      console.log('list length error', err)
     })
   });
+
+  it('returns the correct number of courses for sussex', () => {
+    expect.assertions(1)
+    return getSussexUni().then(json => {
+      expect(json.data.university.courses.length).toEqual(209)
+    })
+  })
 
  });
