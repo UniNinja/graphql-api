@@ -9,11 +9,7 @@ services:
 install:
 - npm install
 script:
-- docker build -t unininja-test -f Dockerfile.test --build-arg MONGODB_USERNAME=$MONGODB_USERNAME --build-arg
-  MONGODB_PASSWORD=$MONGODB_PASSWORD --build-arg MONGODB_DATABASE=$MONGODB_DATABASE
-  --build-arg UNISTATS_AUTH=$UNISTATS_AUTH
-  .
-- docker run -p 3000:3000 --rm unininja-test
+- standard
 before_deploy:
 - docker --version
 - pip install --user awscli

@@ -1,5 +1,3 @@
-scalar LatLon
-
 type Query {
   universities: [University]
   courses(pubukprn: String!): [Course]

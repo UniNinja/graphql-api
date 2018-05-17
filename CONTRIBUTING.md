@@ -23,3 +23,12 @@ If you are part of the UniNinja team and you need access to the `.env` file to d
 
 ## Branching model :octocat:
 The `graphql-api` repo has a `master` branch where you will find the latest stable *production* release. Any code that is not yet deemed worthy for production will be on its own development branch. When introducing new features that are not backwards compatible, please ensure to make a pull request to the development branch and not the master branch.
+
+## Running the test suite
+
+The UniNinja API test suite must be run through Docker. Firstly, [you must obtain the `.env` environment variables file](#obtaining-the-env-file). This file is only obtainable by the UniNinja team due to security reasons.
+
+1. You must first fork and clone the repo: `git clone https://github.com/UniNinja/graphql-api`
+2. Move into the repo directory and install dependencies: `cd graphql-api && npm install`
+3. `docker build -t unininja-api-tests -f Dockerfile.test .`
+4. `docker run -p 3000:3000 --env-file .env --rm unininja-api-tests`. You should now see the test suite run.
